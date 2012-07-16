@@ -34,5 +34,5 @@ Process(Array("git", "for-each-ref", "--format=%(refname)", "refs/remotes/tags/*
           "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", tag_ref),
           "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", tag_ref),
           "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", tag_ref)) !;
-  Process(Array("git", "update-ref", "-d", tag_ref)) !
+  Process(Array("git", "update-ref", "-d", tag_ref)).!
 }
