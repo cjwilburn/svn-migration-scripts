@@ -51,13 +51,17 @@ object Authors {
 
     val groupedAuthors = authors.par.map { author =>
       val authorUrl = url("https://%s/rest/api/latest/user?username=%s".format(host, author))
-      executor(authorUrl.as_!(username, password).># { json =>
-        for {
-          JObject(body) <- json
-          JField("displayName", JString(displayName)) <- body
-          JField("emailAddress", JString(emailAddress)) <- body
-        } yield "%s = %s <%s>".format(author, displayName.trim, emailAddress.trim)
-      }).headOption.getOrElse(author)
+      (try {
+        executor(authorUrl.as_!(username, password) ># { json =>
+          (for {
+             JObject(body) <- json
+             JField("displayName", JString(name)) <- body
+             JField("emailAddress", JString(email)) <- body
+           } yield "%s = %s <%s>".format(author, name.trim, email.trim)).headOption
+        })
+      } catch {
+        case ex: StatusCode => None
+      }).getOrElse(author)
     }.seq.partition((author) => !(author contains '='))
     groupedAuthors._1.toArray.sorted.foreach(println)
     groupedAuthors._2.toArray.sorted.foreach(println)
