@@ -9,5 +9,7 @@ object Main extends App {
     commands.keys.toArray.sorted.foreach(c => println("  " + c))
   }
 
-  args.headOption.map(_.toLowerCase).flatMap(commands.get(_)).getOrElse(help _).apply(args.drop(1))
+  // If the user doesn't specify a valid command, use “help” as a default command.
+  val c = args.headOption.map(_.toLowerCase).flatMap(commands.get(_)).getOrElse(help _)
+  c(args.drop(1))
 }
