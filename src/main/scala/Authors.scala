@@ -10,6 +10,10 @@ object Authors {
     val host = args(0)
     val username = args(1)
     val password = args(2)
+    if (args.length != 3) {
+      println("args: host username password")
+      sys.exit(1)
+    }
 
     val authors = collection.mutable.Set[String]()
     val proc = Process(Array(
@@ -36,7 +40,10 @@ object Authors {
         case _ => ()
       })
     })
-    require(proc.exitValue == 0)
+    if (proc.exitValue != 0) {
+      println("SVN command failed!")
+      sys.exit(1)
+    }
 
     val h = new Http with thread.Safety {
       override def make_logger = new Logger {

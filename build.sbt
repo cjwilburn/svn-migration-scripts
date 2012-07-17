@@ -8,6 +8,8 @@ libraryDependencies ++= Seq(
   "net.databinder" %% "dispatch-http" % "0.8.8"
 )
 
+fork in run := true // We use sys.exit
+
 mainClass in (Compile, run) := Some("Main")
 
 mainClass in (Compile, packageBin) <<= mainClass in (Compile, run)
