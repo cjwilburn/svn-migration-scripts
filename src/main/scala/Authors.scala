@@ -38,7 +38,12 @@ object Authors {
     })
     require(proc.exitValue == 0)
 
-    val h = new Http
+    val h = new Http with thread.Safety {
+      override def make_logger = new Logger {
+        def info(message: String, items: Any*) {}
+        def warn(message:String, items: Any*) {}
+      }
+    }
     val groupedAuthors = authors.par.map { author =>
       val u = url("https://%s/rest/api/latest/user?username=%s".format(host, author))
       h(u.as_!(username, password).># { json =>
