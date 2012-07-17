@@ -39,7 +39,7 @@ object Authors {
     require(proc.exitValue == 0)
 
     val h = new Http
-    val groupedAuthors = authors./*par.*/map { author =>
+    val groupedAuthors = authors.par.map { author =>
       val u = url("https://%s/rest/api/latest/user?username=%s".format(host, author))
       h(u.as_!(username, password).># { json =>
         for {
@@ -48,7 +48,7 @@ object Authors {
           JField("emailAddress", JString(emailAddress)) <- body
         } yield "%s = %s <%s>".format(author, displayName.trim, emailAddress.trim)
       }).headOption.getOrElse(author)
-    }.groupBy(_ contains '=')
+    }.seq.groupBy(_ contains '=')
 
     groupedAuthors.getOrElse(false, Set[String]()).toArray.sorted.foreach(println)
     groupedAuthors.getOrElse(true, Set[String]()).toArray.sorted.foreach(println)
