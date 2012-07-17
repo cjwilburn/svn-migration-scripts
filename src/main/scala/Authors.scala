@@ -6,15 +6,20 @@ import sys.process._
 import xml.pull._
 
 object Authors {
+  val executor = new Http with thread.Safety {
+    override def make_logger = new Logger {
+      def info(message: String, items: Any*) {}
+      def warn(message:String, items: Any*) {}
+    }
+  }
+
   def main(args: Array[String]) {
-    val host = args(0)
-    val username = args(1)
-    val password = args(2)
     if (args.length != 3) {
       println("args: host username password")
       sys.exit(1)
     }
 
+    val Array(host, username, password) = args
     val authors = collection.mutable.Set[String]()
     val proc = Process(Array(
       "svn", "log",
@@ -26,8 +31,7 @@ object Authors {
       "--xml", "-q",
       "https://%s/svn".format(host)
     )).run(BasicIO.standard(false) withOutput { is =>
-      val source = Source.fromInputStream(is)
-      val reader = new XMLEventReader(source)
+      val reader = new XMLEventReader(Source.fromInputStream(is))
       reader.foreach(_ match {
         case EvElemStart(null, "author", _, _) => {
           authors += reader.takeWhile(_ match {
@@ -45,24 +49,17 @@ object Authors {
       sys.exit(1)
     }
 
-    val h = new Http with thread.Safety {
-      override def make_logger = new Logger {
-        def info(message: String, items: Any*) {}
-        def warn(message:String, items: Any*) {}
-      }
-    }
     val groupedAuthors = authors.par.map { author =>
-      val u = url("https://%s/rest/api/latest/user?username=%s".format(host, author))
-      h(u.as_!(username, password).># { json =>
+      val authorUrl = url("https://%s/rest/api/latest/user?username=%s".format(host, author))
+      executor(authorUrl.as_!(username, password).># { json =>
         for {
           JObject(body) <- json
           JField("displayName", JString(displayName)) <- body
           JField("emailAddress", JString(emailAddress)) <- body
         } yield "%s = %s <%s>".format(author, displayName.trim, emailAddress.trim)
       }).headOption.getOrElse(author)
-    }.seq.groupBy(_ contains '=')
-
-    groupedAuthors.getOrElse(false, Set[String]()).toArray.sorted.foreach(println)
-    groupedAuthors.getOrElse(true, Set[String]()).toArray.sorted.foreach(println)
+    }.seq.partition((author) => !(author contains '='))
+    groupedAuthors._1.toArray.sorted.foreach(println)
+    groupedAuthors._2.toArray.sorted.foreach(println)
   }
 }
