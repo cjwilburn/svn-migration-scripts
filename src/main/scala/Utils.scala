@@ -1,4 +1,5 @@
-import java.io._
+import java.io.File
+import java.net.URLDecoder
 import sys.process._
 
 object Svn {
@@ -10,6 +11,18 @@ object Svn {
         Seq("svn", "ls", url).lines_!.map(url + "/" + _.stripSuffix("/"))
     }
     (allBranchUrls diff strippedUrls).map(new File(_).getName)
+  }
+
+}
+
+object Git {
+
+  def isIntermediateRef(ref: String) = {
+    "^.+@\\d+$".r.findAllIn(ref).hasNext
+  }
+
+  def cleanRef(ref: String) = {
+    URLDecoder.decode(ref, "UTF-8")
   }
 
 }
