@@ -1,15 +1,13 @@
 object Main extends App {
-  val commands = Map(
-    "annotate-tags" -> AnnotateTags.main _,
-    "verify-tags" -> VerifyTags.main _
-  )
 
-  def help(x: Any) {
-    println("Available commands:")
-    commands.keys.toArray.sorted.foreach(c => println("  " + c))
-  }
+  val (options, urls) = args.partition(_ startsWith "-")
+  val svnRoots = Set("branches", "tags").map{ r => (r, urls.map{ u => {u stripSuffix "/"} + '/' + r }) }.toMap
+  implicit val dryRun = options contains "--dry-run"
 
-  // If the user doesn't specify a valid command, use “help” as a default command.
-  val command = args.headOption.map(_.toLowerCase).flatMap(commands.get _).getOrElse(help _)
-  command(args.drop(1))
+  Tags.annotate()
+  Branches.createLocal()
+  Tags.clean(svnRoots("tags"))
+  Branches.clean(svnRoots("branches"))
+
 }
+
