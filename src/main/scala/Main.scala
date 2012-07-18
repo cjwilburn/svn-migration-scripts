@@ -8,6 +8,7 @@ object Main extends App {
   val commands = Map(
     "annotate-tags" -> AnnotateTags.main _,
     "authors" -> Authors.main _,
+    "sync-rebase" -> SyncRebase.main _,
     "verify-tags" -> VerifyTags.main _
   )
 
