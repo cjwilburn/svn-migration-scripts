@@ -6,10 +6,9 @@ object SyncRebase {
       val remote = "remotes/" + (if (branch == "master") "trunk" else branch)
       val lstable = $("git", "rev-parse", "--sq", "heads/" + branch)
       val rstable = $("git", "rev-parse", "--sq", remote)
-      if (lstable != rstable) {
+      if (lstable != rstable)
         if (List("git", "rebase", remote, branch).! != 0)
           throw sys.error("error rebasing %s onto %s".format(branch, remote))
-      }
     }
   }
 }
