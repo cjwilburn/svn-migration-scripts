@@ -1,8 +1,6 @@
 import sys.process._
 
 object AnnotateTags {
-  def $(s: String*): String = Process(s).!!.stripLineEnd
-
   def main(args: Array[String]) {
     Process(Array("git", "for-each-ref", "--format=%(refname)", "refs/remotes/tags/*")).lines.foreach { tag_ref =>
       val tag = tag_ref stripPrefix "refs/remotes/tags/"

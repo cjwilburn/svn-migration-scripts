@@ -1,3 +1,9 @@
+import sys.process._
+
+object `package` {
+  def $(s: String*): String = s.!!.stripLineEnd
+}
+
 object Main extends App {
   val commands = Map(
     "annotate-tags" -> AnnotateTags.main _,
