@@ -14,7 +14,7 @@ object Branches {
 
         // create a local branch ref only if it's not trunk (which is already mapped to master)
         // and if it is not an intermediate branch (ex: foo@42)
-        if (!"trunk".equals(branch) && !isIntermediateRef(branch)) {
+        if (!("trunk" == branch) && !isIntermediateRef(branch)) {
           println("Creating the local branch " + branch)
           if (!dryRun) {
             Seq("git", "branch", "-f", "-t", branch, branch_ref).!
@@ -35,7 +35,7 @@ object Branches {
     val gitItems = Seq("git", "for-each-ref", "refs/heads", "--format=%(refname)").lines
       .map(_ stripPrefix "refs/heads/")
       // do not compare master
-      .filterNot(_ equals "master")
+      .filterNot(_ == "master")
       // clean the Git branch names
       .map(cleanRef _)
 
