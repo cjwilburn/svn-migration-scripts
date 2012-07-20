@@ -7,6 +7,8 @@ object Branches {
    * Create local branches out of svn branches.
    */
   def createLocal()(implicit dryRun: Boolean) {
+    println("# Creating local branches...")
+
     Seq("git", "for-each-ref", "--format=%(refname)", "refs/remotes/").lines.foreach {
       branch_ref =>
         // delete the "refs/remotes/" prefix
@@ -15,8 +17,9 @@ object Branches {
         // create a local branch ref only if it's not trunk (which is already mapped to master)
         // and if it is not an intermediate branch (ex: foo@42)
         if (!("trunk" == branch) && !isIntermediateRef(branch)) {
-          println("Creating the local branch " + branch)
-          if (!dryRun) {
+          if (dryRun) {
+            println("Creating the local branch " + branch)
+          } else {
             Seq("git", "branch", "-f", "-t", branch, branch_ref).!
           }
         }
@@ -26,7 +29,9 @@ object Branches {
   /**
    * Remove branches that does not exist in Subversion.
    */
-  def clean(svnUrls: Array[String])(implicit dryRun: Boolean) {
+  def checkObsolete(svnUrls: Array[String])(implicit dryRun: Boolean) {
+    println("# Checking for obsolete branches...")
+
     // find the list of branches in SVN
     val svnItems = Svn.findSvnItems(svnUrls)
 
@@ -44,13 +49,16 @@ object Branches {
     gitItems.foreach {
       branch =>
         if (!(svnItems contains branch)) {
-          println("Deleting the Git branch: " + branch)
-          if (!dryRun) {
+          if (dryRun) {
+            println("Deleting the Git branch: " + branch)
+          } else {
             Seq("git", "branch", "-D", branch).!
           }
         }
     }
 
+    // check for missing branches in Git
+    // (note: this should never happen if the correct branch root(s) were given to git-svn)
     svnItems.foreach {
       branch =>
         if (!(gitItems contains branch)) {
