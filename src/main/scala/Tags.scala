@@ -46,11 +46,10 @@ object Tags {
         println("Creating annotated tag: " + tag)
         if (!dryRun) {
           Seq("git", "show", "-s", "--pretty=format:%s%n%n%b", tag_ref) #|
-          Process(Seq("git", "tag", "-a", "-F", "-", tag, target_ref), None,
+          Process(Seq("git", "tag", "-f", "-a", "-F", "-", tag, target_ref), None,
               "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", tag_ref),
               "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", tag_ref),
               "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", tag_ref)) !;
-          Seq("git", "update-ref", "-d", tag_ref).!
         }
     }
   }

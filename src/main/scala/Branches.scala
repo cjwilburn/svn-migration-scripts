@@ -9,21 +9,23 @@ object Branches {
   def createLocal()(implicit dryRun: Boolean) {
     println("# Creating local branches...")
 
-    Seq("git", "for-each-ref", "--format=%(refname)", "refs/remotes/").lines.foreach {
-      branch_ref =>
-        // delete the "refs/remotes/" prefix
-        val branch = branch_ref stripPrefix "refs/remotes/"
+    Seq("git", "for-each-ref", "--format=%(refname)", "refs/remotes/").lines
+      .filterNot(_ startsWith "refs/remotes/tags")
+      .foreach {
+        branch_ref =>
+          // delete the "refs/remotes/" prefix
+          val branch = branch_ref stripPrefix "refs/remotes/"
 
-        // create a local branch ref only if it's not trunk (which is already mapped to master)
-        // and if it is not an intermediate branch (ex: foo@42)
-        if (!("trunk" == branch) && !isIntermediateRef(branch)) {
-          if (dryRun) {
-            println("Creating the local branch " + branch)
-          } else {
-            Seq("git", "branch", "-f", "-t", branch, branch_ref).!
+          // create a local branch ref only if it's not trunk (which is already mapped to master)
+          // and if it is not an intermediate branch (ex: foo@42)
+          if (!("trunk" == branch) && !isIntermediateRef(branch)) {
+            if (dryRun) {
+              println("Creating the local branch " + branch)
+            } else {
+              Seq("git", "branch", "-f", "-t", branch, branch_ref).!
+            }
           }
-        }
-    }
+      }
   }
 
   /**
