@@ -62,24 +62,32 @@ object Tags {
     println("# Checking for obsolete tags...")
 
     // find the list of tags in SVN
-    val svnItems = Svn.findSvnItems(urls)
+    val svnTags = Svn.findSvnItems(urls)
 
-   // find the list of tags in Git and determine which tags are not SVN
-    val gitItems = "git for-each-ref refs/tags --format=%(refname:short)".lines_!
-    (gitItems diff svnItems).foreach {
-      item =>
-        if (dryRun) {
-          println("Deleting Git tag not in Subversion: " + item)
-        } else {
-          ("git tag -d " + item).!
+    // find the list of tags in Git
+    val gitTags = Seq("git", "for-each-ref", "refs/tags", "--format=%(refname)").lines
+      .map(_ stripPrefix "refs/tags/")
+      .map(ref => (cleanRef(ref), ref))
+
+    // remove the tags deleted in SVN
+    gitTags.foreach {
+      case (tag, ref) =>
+        if (!(svnTags contains tag)) {
+          if (dryRun) {
+            println("Deleting Git tag not in Subversion: " + ref)
+          } else {
+            Seq("git", "tag", "-d", ref).!
+          }
         }
     }
 
     // determine the tags in SVN but not Git
     //(note: this should never happen if the correct tag root(s) were given to git-svn)
-    (svnItems diff gitItems).foreach {
-      item =>
-        println("This Subversion tag is not in Git: " + item)
+    svnTags.foreach {
+      tag =>
+        if (gitTags.filter{ case (t, _) => t == tag }.isEmpty) {
+          println("This Subversion tag is not in Git: " + tag)
+        }
     }
   }
 
