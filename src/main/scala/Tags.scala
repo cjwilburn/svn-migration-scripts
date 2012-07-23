@@ -66,7 +66,7 @@ object Tags {
     // find the list of tags in Git
     val gitTags = Seq("git", "for-each-ref", "refs/tags", "--format=%(refname)").lines
       .map(_ stripPrefix "refs/tags/")
-      .map(ref => (cleanRef(ref), ref))
+      .map(ref => (decodeRef(ref), ref))
 
     // remove the tags deleted in SVN
     gitTags.foreach {
@@ -87,6 +87,27 @@ object Tags {
         if (gitTags.filter{ case (t, _) => t == tag }.isEmpty) {
           println("This Subversion tag is not in Git: " + tag)
         }
+    }
+  }
+
+  /**
+   * Fix tag names after conversion.
+   */
+  def fixNames() {
+    println("# Cleaning tag names")
+
+    // list Git tag that needs fixing
+    Seq("git", "for-each-ref", "refs/tags", "--format=%(refname)").lines
+      .map(_ stripPrefix "refs/tags/")
+      .filter(t => decodeRef(t) != t)
+      .foreach { t =>
+        val c = t concat "^{commit}" // commit the tag is referring to
+        Seq("git", "show", "-s", "--pretty=format:%s%n%n%b", c) #|
+            Process(Seq("git", "tag", "-a", "-F", "-", cleanRef(t), c), None,
+              "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", c),
+              "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", c),
+              "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", c)) !;
+          Seq("git", "tag", "-d", t).!
     }
   }
 

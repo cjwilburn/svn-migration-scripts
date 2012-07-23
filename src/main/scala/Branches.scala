@@ -44,7 +44,7 @@ object Branches {
       // do not compare master
       .filterNot(_ == "master")
       // clean the Git branch names
-      .map(ref => (cleanRef(ref), ref)) // (cleaned-up name, actual ref name),
+      .map(ref => (decodeRef(ref), ref)) // (cleaned-up name, actual ref name),
                                         // ex: ("my branch", "my%20branch")
                                         // the cleaned-up name will match the actual name of the branch in Subversion
 
@@ -69,6 +69,21 @@ object Branches {
           println("This Subversion branch is not in Git: " + branch)
         }
     }
+  }
+
+  /**
+   * Fix branch names after conversion.
+   */
+  def fixNames() {
+    println("# Cleaning branch names")
+
+    // list Git branches that needs fixing
+    Seq("git", "for-each-ref", "refs/heads", "--format=%(refname)").lines
+      .map(_ stripPrefix "refs/heads/")
+      .filter(r => decodeRef(r) != r)
+      .foreach { r =>
+        Seq("git", "branch", "-m", r, cleanRef(r)).!
+      }
   }
 
 }

@@ -54,6 +54,9 @@ object Main extends App {
     Branches.createLocal()
     Tags.checkObsolete(svnRoots("tags"))
     Branches.checkObsolete(svnRoots("branches"))
+    Tags.fixNames()
+    Branches.fixNames()
+
   }
 
 }
