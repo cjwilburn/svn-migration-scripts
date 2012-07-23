@@ -6,10 +6,20 @@ import sys.process._
 import xml.pull._
 
 object Authors {
-  val executor = new Http with thread.Safety {
-    override def make_logger = new Logger {
-      def info(message: String, items: Any*) {}
-      def warn(message:String, items: Any*) {}
+  val executor = new Http with thread.Safety with NoLogging
+
+  // Return a tuple of user name -> email, or None
+  def authorDetails(root: Request, author: String): Option[(String, String)] = {
+    try {
+      executor(root / "user?username=%s".format(Request.encode_%(author)) ># { json =>
+        (for {
+          JObject(body) <- json
+          JField("displayName", JString(name)) <- body
+          JField("emailAddress", JString(email)) <- body
+        } yield (name.trim, email.trim)).headOption
+      })
+    } catch {
+      case ex: StatusCode => None
     }
   }
 
@@ -21,7 +31,7 @@ object Authors {
 
     val Array(host, username, password) = args
     val authors = collection.mutable.Set[String]()
-    val proc = Process(Array(
+    val proc = List(
       "svn", "log",
       "--trust-server-cert",
       "--non-interactive",
@@ -29,9 +39,10 @@ object Authors {
       "--password", password,
       "--no-auth-cache",
       "--xml", "-q",
-      "https://%s/svn".format(host)
-    )).run(BasicIO.standard(false) withOutput { is =>
+      "https://" + host + "/svn"
+    ).run(BasicIO.standard(false) withOutput { is =>
       val reader = new XMLEventReader(Source.fromInputStream(is))
+      // Add the content of the author elements to the authors set declared above.
       reader.foreach(_ match {
         case EvElemStart(null, "author", _, _) => {
           authors += reader.takeWhile(_ match {
@@ -49,20 +60,14 @@ object Authors {
       sys.exit(1)
     }
 
-    val groupedAuthors = authors.par.map { author =>
-      val authorUrl = url("https://%s/rest/api/latest/user?username=%s".format(host, author))
-      (try {
-        executor(authorUrl.as_!(username, password) ># { json =>
-          (for {
-             JObject(body) <- json
-             JField("displayName", JString(name)) <- body
-             JField("emailAddress", JString(email)) <- body
-           } yield "%s = %s <%s>".format(author, name.trim, email.trim)).headOption
-        })
-      } catch {
-        case ex: StatusCode => None
-      }).getOrElse(author)
-    }.seq.partition((author) => !(author contains '='))
+    val apiRoot = url("https://" + host + "/rest/api/latest") as_! (username, password)
+    val groupedAuthors = authors
+      .par
+      // Convert authors to "svnauthor = Git Author <email@address>" where possible.
+      .map(author => authorDetails(apiRoot, author).map(details => "%s = %s <%s>".format(author, details._1, details._2)).getOrElse(author))
+      .seq
+      .partition(author => !(author contains '='))
+    // Print out the users we couldn't map before the users we could. This is to make it easier for the customer to identify which authors need identification.
     groupedAuthors._1.toArray.sorted.foreach(println)
     groupedAuthors._2.toArray.sorted.foreach(println)
   }
