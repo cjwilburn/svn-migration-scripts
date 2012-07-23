@@ -3,7 +3,7 @@ import scala.Array
 object Main extends App {
 
   val commands = Map(
-    "authors" -> Main.authors _,
+    "authors" -> authors _,
     "clean-git" -> Main.clean _
   )
 
@@ -38,9 +38,8 @@ object Main extends App {
   /**
    * Generate the initial author list from the Subversion repository.
    */
-  def authors(options: Array[String], urls: Array[String]) {
-    println("*** Warning: this list will not be accurate if the URL is not the root of the Subversion repository")
-    throw new UnsupportedOperationException // TODO
+  def authors(options: Array[String], arguments: Array[String]) {
+    Authors.main(arguments)
   }
 
   /**

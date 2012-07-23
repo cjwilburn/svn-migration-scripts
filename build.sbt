@@ -5,8 +5,11 @@ name := "svn-migration-scripts"
 version := "0.1"
 
 libraryDependencies ++= Seq(
-   "junit" % "junit" % "4.10" % "test"
+  "junit" % "junit" % "4.10" % "test",
+  "net.databinder" %% "dispatch-http" % "0.8.8"
 )
+
+fork in run := true // We use sys.exit
 
 mainClass in (Compile, run) := Some("Main")
 
