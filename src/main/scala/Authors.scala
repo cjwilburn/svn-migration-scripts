@@ -11,7 +11,7 @@ object Authors {
   // Return a tuple of user name -> email, or None
   def authorDetails(root: Request, author: String): Option[(String, String)] = {
     try {
-      executor(root / "user?username=%s".format(Request.encode_%(author)) ># { json =>
+      executor(root / "user" <<? Map("username" -> author) ># { json =>
         (for {
           JObject(body) <- json
           JField("displayName", JString(name)) <- body
