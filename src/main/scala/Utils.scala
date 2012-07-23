@@ -21,8 +21,19 @@ object Git {
     "^.+@\\d+$".r.findAllIn(ref).hasNext
   }
 
-  def cleanRef(ref: String) = {
+  def decodeRef(ref: String) = {
     URLDecoder.decode(ref, "UTF-8")
+  }
+
+  def cleanRef(ref: String) = {
+    // reference: http://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
+    decodeRef(ref).filterNot(Character.isISOControl _)
+                  .trim()
+                  .stripSuffix("?")
+                  .stripSuffix(".lock")
+                  .replaceAll("\\.+$", "")
+                  .replaceAll("\\.{2,}", ".")
+                  .replaceAll("(?:\\s+|\\@\\{|[~^:*?/]+|\\[+|\\]+)", "-")
   }
 
 }

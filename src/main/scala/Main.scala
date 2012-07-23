@@ -52,8 +52,11 @@ object Main extends App {
 
     Tags.annotate()
     Branches.createLocal()
-    Tags.clean(svnRoots("tags"))
-    Branches.clean(svnRoots("branches"))
+    Tags.checkObsolete(svnRoots("tags"))
+    Branches.checkObsolete(svnRoots("branches"))
+    Tags.fixNames()
+    Branches.fixNames()
+
   }
 
 }
