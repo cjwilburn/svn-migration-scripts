@@ -33,7 +33,7 @@ object Git {
                   .stripSuffix(".lock")
                   .replaceAll("\\.+$", "")
                   .replaceAll("\\.{2,}", ".")
-                  .replaceAll("(?:\\s+|\\@\\{|[~^:*?/]+|\\[+|\\]+)", "-")
+                  .replaceAll("""(?:\s+|\@\{|[~^:*?/]+|\[+|\]+)""", "-")
   }
 
 }
