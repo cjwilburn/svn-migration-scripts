@@ -1,9 +1,9 @@
+import collection._
 import dispatch._
 import dispatch.liftjson.Js._
 import io.Source
 import java.lang.String._
 import net.liftweb.json._
-import scala.Array
 import sys.process._
 import xml.pull._
 
@@ -25,10 +25,10 @@ object Authors {
     }
   }
 
-  def generateList(args: Array[String]) = fetchList(process(args), convertUsers)
-  def generateListForOnDemand(args: Array[String]) = fetchList(processOnDemand(args), convertOnDemandUsers)
+  def generateList(args: Array[String]) = convertUsers(fetchList(process(args)))
+  def generateListForOnDemand(args: Array[String]) = convertOnDemandUsers(fetchList(processOnDemand(args)))
 
-  private def fetchList(args: (String, String, String), convertUsers: (String, String, String, Traversable[String]) => Unit) {
+  private def fetchList(args: (String, Option[String], Option[String])) = {
     println("# Generating list of authors...")
 
     val (host, username, password) = args
@@ -40,8 +40,8 @@ object Authors {
       "--no-auth-cache",
       "--xml", "-q",
       host)
-      .++ (if (username != null) Seq("--username", username) else Seq())
-      .++ (if (password != null) Seq("--password", password) else Seq())
+      .++ (username.map(Seq("--username", _)).getOrElse(Seq()))
+      .++ (password.map(Seq("--password", _)).getOrElse(Seq()))
       .run(BasicIO.standard(false) withOutput { is =>
       val reader = new XMLEventReader(Source.fromInputStream(is))
       // Add the content of the author elements to the authors set declared above.
@@ -63,32 +63,37 @@ object Authors {
       sys.exit(1)
     }
 
-    convertUsers(host, username, password, authors)
+    (host, username, password, authors)
   }
 
-  private def process(args: Array[String]): (String, String, String) = {
+  private def process(args: Array[String]) = {
     args match {
-      case (Array(host, username, password)) => (host, username, password)
-      case (Array(host, username)) => (host, username, readLine("password? "))
-      case (Array(host)) => (host, null, null)
+      case Array(host, username, password) => (host, Some(username), Some(password))
+      case Array(host, username) => (host, Some(username), Some(readLine("password? ")))
+      case Array(host) => (host, None, None)
       case _ =>
-        println("Required: host [username] [password]")
+        println("Required: host [username [password]]")
         sys.exit(1)
     }
   }
 
-  private def processOnDemand(args: Array[String]): (String, String, String) = {
+  private def processOnDemand(args: Array[String]) = {
     process(args) match {
-      case ((host, username, password)) => ("https://" + host + "/svn", username, password)
+      case (_, None, _) =>
+        println("Credentials are required to connect to your OnDemand instance")
+        sys.exit(1)
+      case (host, username, password) => ("https://" + host + "/svn", username, password)
     }
   }
 
-  private def convertUsers(host: String, username: String, password: String, authors: Traversable[String]) {
+  private def convertUsers(args: (String, Option[String], Option[String], TraversableOnce[String])) {
+    val (host, username, password, authors) = args
     authors.map(format("%1$s = %1$s <%1$s@mycompany.com>", _)).foreach(println)
   }
 
-  private def convertOnDemandUsers(host: String, username: String, password: String, authors: Traversable[String]) {
-    val apiRoot = url(host stripSuffix "/svn" concat "/rest/api/latest") as_! (username, password)
+  private def convertOnDemandUsers(args: (String, Option[String], Option[String], GenTraversable[String])) {
+    val (host, username, password, authors) = args
+    val apiRoot = url(host stripSuffix "/svn" concat "/rest/api/latest") as_! (username.get, password.get)
     val groupedAuthors = authors
       .par
       // Convert authors to "svnauthor = Git Author <email@address>" where possible.
