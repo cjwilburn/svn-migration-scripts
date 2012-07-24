@@ -5,6 +5,7 @@ import io.Source
 import java.lang.String._
 import net.liftweb.json._
 import sys.process._
+import util.Sorting._
 import xml.pull._
 
 object Authors {
@@ -25,8 +26,8 @@ object Authors {
     }
   }
 
-  def generateList(args: Array[String]) = convertUsers(fetchList(process(args)))
-  def generateListForOnDemand(args: Array[String]) = convertOnDemandUsers(fetchList(processOnDemand(args)))
+  def generateList(args: Array[String]) = printUsers(convertUsers(fetchList(process(args))))
+  def generateListForOnDemand(args: Array[String]) = printUsers(convertOnDemandUsers(fetchList(processOnDemand(args))))
 
   private def fetchList(args: (String, Option[String], Option[String])) = {
     println("# Generating list of authors...")
@@ -86,23 +87,24 @@ object Authors {
     }
   }
 
-  private def convertUsers(args: (String, Option[String], Option[String], TraversableOnce[String])) {
+  private def convertUsers(args: (String, Option[String], Option[String], Traversable[String])): Traversable[String] = {
     val (host, username, password, authors) = args
-    authors.map(format("%1$s = %1$s <%1$s@mycompany.com>", _)).foreach(println)
+    authors.map(format("%1$s = %1$s <%1$s@mycompany.com>", _))
   }
 
-  private def convertOnDemandUsers(args: (String, Option[String], Option[String], GenTraversable[String])) {
+  private def convertOnDemandUsers(args: (String, Option[String], Option[String], GenTraversable[String])): Traversable[String] = {
     val (host, username, password, authors) = args
     val apiRoot = url(host stripSuffix "/svn" concat "/rest/api/latest") as_! (username.get, password.get)
-    val groupedAuthors = authors
+    authors
       .par
       // Convert authors to "svnauthor = Git Author <email@address>" where possible.
       .map(author => authorDetails(apiRoot, author).map(details => "%s = %s <%s>".format(author, details._1, details._2)).getOrElse(author))
       .seq
-      .partition(author => !(author contains '='))
-    // Print out the users we couldn't map before the users we could. This is to make it easier for the customer to identify which authors need identification.
-    groupedAuthors._1.toArray.sorted.foreach(println)
-    groupedAuthors._2.toArray.sorted.foreach(println)
   }
 
+  def printUsers(users: Traversable[String]) {
+    // Print out the users we couldn't map before the users we could. This is to make it easier for the customer to identify which authors need identification.
+    val grouped = users.partition(_ contains '=')
+    (stableSort(grouped._2.toSeq) ++ stableSort(grouped._1.toSeq)).foreach(println)
+  }
 }
