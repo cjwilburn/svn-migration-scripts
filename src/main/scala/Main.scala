@@ -4,11 +4,12 @@ object Main extends App {
 
   val commands = Map(
     "authors" -> authors _,
+    "authors-ondemand" -> authorsOnDemand _,
     "clean-git" -> Main.clean _
   )
 
-  val (command, options, urls) = parse(args)
-  command(options, urls)
+  val (command, options, arguments) = parse(args)
+  command(options, arguments)
 
   /**
    * Parse command line arguments.
@@ -17,20 +18,19 @@ object Main extends App {
    * @return desired command, command options and Subversion URLs
    */
   def parse(args: Array[String]) = {
-    val (options, urls) = args.drop(1).partition(_ startsWith "-")
+    val (options, arguments) = args.drop(1).partition(_ startsWith "-")
 
     // If the user doesn't specify a valid command, use “help” as a default one
-    val command = args.headOption.map(_.toLowerCase).flatMap(commands.get(_))
-                                 .filterNot(_ => urls.isEmpty).getOrElse(help _)
+    val command = args.headOption.map(_.toLowerCase).flatMap(commands.get(_)).getOrElse(help _)
 
-    (command, options, urls)
+    (command, options, arguments)
   }
 
   /**
    * Show usage information.
    */
   def help(options: Array[String], urls: Array[String]) {
-    println("Usage: command [--dry-run] SVN-repository-url")
+    println("Unrecognised or missing command")
     println("Available commands:")
     commands.keys.toArray.sorted.foreach(c => println(" - " + c))
   }
@@ -39,7 +39,14 @@ object Main extends App {
    * Generate the initial author list from the Subversion repository.
    */
   def authors(options: Array[String], arguments: Array[String]) {
-    Authors.main(arguments)
+    Authors.generateList(arguments)
+  }
+
+  /**
+   * Generate the initial author list from an Atlassian OnDemand instance.
+   */
+  def authorsOnDemand(options: Array[String], arguments: Array[String]) {
+    Authors.generateListForOnDemand(arguments)
   }
 
   /**
@@ -49,12 +56,16 @@ object Main extends App {
     val svnRoots = Set("branches", "tags").map { r => (r, urls.map { u => { u stripSuffix "/"} + '/' + r})}.toMap
     implicit val dryRun = options contains "--dry-run"
 
-    Tags.annotate()
-    Branches.createLocal()
-    Tags.checkObsolete(svnRoots("tags"))
-    Branches.checkObsolete(svnRoots("branches"))
-    Tags.fixNames()
-    Branches.fixNames()
+    urls match {
+      case Array() => println("Required: URL of the Subversion repository")
+      case _ =>
+        Tags.annotate()
+        Branches.createLocal()
+        Tags.checkObsolete(svnRoots("tags"))
+        Branches.checkObsolete(svnRoots("branches"))
+        Tags.fixNames()
+        Branches.fixNames()
+    }
 
   }
 
