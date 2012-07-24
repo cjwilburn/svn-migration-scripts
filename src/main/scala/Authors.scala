@@ -11,28 +11,23 @@ import xml.pull._
 object Authors {
   private val executor = new Http with thread.Safety with NoLogging
 
-  // Return a tuple of user name -> email, or None
-  private def authorDetails(root: Request, author: String): Option[(String, String)] = {
-    try {
-      executor(root / "user" <<? Map("username" -> author) ># { json =>
-        (for {
-          JObject(body) <- json
-          JField("displayName", JString(name)) <- body
-          JField("emailAddress", JString(email)) <- body
-        } yield (name.trim, email.trim)).headOption
-      })
-    } catch {
-      case ex: StatusCode => None
-    }
+  def generateList(args: Array[String]) {
+    val (host, username, password) = process(args)
+    val authors = fetchList(host, username, password)
+    val convertedAuthors = authors.map(author => userDetails(host, username, password)(author).map(details => detailRecord(author, details._1, details._2)).getOrElse(author))
+    printUsers(convertedAuthors)
   }
 
-  def generateList(args: Array[String]) = printUsers(convertUsers(fetchList(process(args))))
-  def generateListForOnDemand(args: Array[String]) = printUsers(convertOnDemandUsers(fetchList(processOnDemand(args))))
+  def generateListForOnDemand(args: Array[String]) {
+    val (host, username, password) = processOnDemand(args)
+    val authors = fetchList(host, username, password)
+    val convertedAuthors = authors.map(author => onDemandUserDetails(host, username, password)(author).map(details => detailRecord(author, details._1, details._2)).getOrElse(author))
+    printUsers(convertedAuthors)
+  }
 
-  private def fetchList(args: (String, Option[String], Option[String])) = {
+  private def fetchList(host: String, username: Option[String], password: Option[String]) = {
     println("# Generating list of authors...")
 
-    val (host, username, password) = args
     val authors = collection.mutable.Set[String]()
     val proc = List(
       "svn", "log",
@@ -64,7 +59,7 @@ object Authors {
       sys.exit(1)
     }
 
-    (host, username, password, authors)
+    authors
   }
 
   private def process(args: Array[String]) = {
@@ -89,21 +84,23 @@ object Authors {
 
   def detailRecord(username: String, fullname: String, email: String) = "%s = %s <%s>".format(username, fullname, email)
 
-  private def convertUsers(args: (String, Option[String], Option[String], Traversable[String])): Traversable[String] = {
-    val (host, username, password, authors) = args
-    authors.map(author => detailRecord(author, author, author + "@mycompany.com"))
-  }
-
   // Convert authors to "svnauthor = Git Author <email@address>" where possible.
-  private def convertOnDemandUsers(args: (String, Option[String], Option[String], GenTraversable[String])): Traversable[String] = {
-    val (host, username, password, authors) = args
-    val apiRoot = url(host stripSuffix "/svn" concat "/rest/api/latest") as_! (username.get, password.get)
-    authors
-      .par
-      .map(author => authorDetails(apiRoot, author).map(details => detailRecord(author, details._1, details._2)).getOrElse(author))
-      .seq
+  def userDetails(host: String, username: Option[String], password: Option[String]) = (author: String) => Some((author, author + "@mycompany.com"))
+  def onDemandUserDetails(host: String, username: Option[String], password: Option[String]) = {
+    val root = url(host stripSuffix "/svn" concat "/rest/api/latest") as_! (username.get, password.get)
+    (author: String) => try {
+      executor(root / "user" <<? Map("username" -> author) ># { json =>
+        (for {
+          JObject(body) <- json
+          JField("displayName", JString(name)) <- body
+          JField("emailAddress", JString(email)) <- body
+        } yield (name.trim, email.trim)).headOption
+      }): Option[(String, String)]
+    } catch {
+      case ex: StatusCode => None
+    }
   }
-
+  
   def printUsers(users: Traversable[String]) {
     // Print out the users we couldn't map before the users we could. This is to make it easier for the customer to identify which authors need identification.
     val grouped = users.partition(_ contains '=')
