@@ -87,18 +87,20 @@ object Authors {
     }
   }
 
+  def detailRecord(username: String, fullname: String, email: String) = "%s = %s <%s>".format(username, fullname, email)
+
   private def convertUsers(args: (String, Option[String], Option[String], Traversable[String])): Traversable[String] = {
     val (host, username, password, authors) = args
-    authors.map(format("%1$s = %1$s <%1$s@mycompany.com>", _))
+    authors.map(author => detailRecord(author, author, author + "@mycompany.com"))
   }
 
+  // Convert authors to "svnauthor = Git Author <email@address>" where possible.
   private def convertOnDemandUsers(args: (String, Option[String], Option[String], GenTraversable[String])): Traversable[String] = {
     val (host, username, password, authors) = args
     val apiRoot = url(host stripSuffix "/svn" concat "/rest/api/latest") as_! (username.get, password.get)
     authors
       .par
-      // Convert authors to "svnauthor = Git Author <email@address>" where possible.
-      .map(author => authorDetails(apiRoot, author).map(details => "%s = %s <%s>".format(author, details._1, details._2)).getOrElse(author))
+      .map(author => authorDetails(apiRoot, author).map(details => detailRecord(author, details._1, details._2)).getOrElse(author))
       .seq
   }
 
