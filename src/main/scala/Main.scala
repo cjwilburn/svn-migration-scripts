@@ -38,16 +38,14 @@ object Main extends App {
   /**
    * Generate the initial author list from the Subversion repository.
    */
-  def authors(options: Array[String], arguments: Array[String]) {
-    Authors.generateList(arguments)
-  }
+  def authors(options: Array[String], arguments: Array[String]) =
+    Authors.process(arguments)
 
   /**
    * Generate the initial author list from an Atlassian OnDemand instance.
    */
-  def authorsOnDemand(options: Array[String], arguments: Array[String]) {
-    Authors.generateListForOnDemand(arguments)
-  }
+  def authorsOnDemand(options: Array[String], arguments: Array[String]) =
+    Authors.processOnDemand(arguments)
 
   /**
    * Clean the repository after the initial conversion by git-svn.
