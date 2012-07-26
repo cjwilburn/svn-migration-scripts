@@ -1,4 +1,5 @@
 import java.io.{File, IOException}
+import sys.process._
 
 object Verify {
   object VersionComparator extends Ordering[String] {
@@ -24,63 +25,37 @@ object Verify {
       if (v != 0) v else lefts.length.compareTo(rights.length)
     }
   }
+
+  def findVersion(s: String*): Either[String, String] =
+    (try { (s :+ "--version").lines.headOption }
+     catch { case e: IOException => None })
+       .flatMap("(?<=version )[^ ]+".r findFirstIn _).toRight("Unable to determine version.")
+
+  def requireVersion(actual: String, required: String): Either[String, String] =
+    if (VersionComparator.lt(actual, required)) Left("Version %s required (found %s).".format(required, actual)) else Right(actual)
+
+  case class Dependency(name: String, required: String, invocation: String*)
   
   def main(args: Array[String]) {
-    val requiredGitVersion = "1.7.7.5"
     Array(
-      {
-        val javaVersion = sys.props("java.runtime.version")
-        val requiredJavaVersion = "1.6.0_26"
-        if (VersionComparator.lt(javaVersion, requiredJavaVersion)) {
-          Some("Java version %s required, but only found %s".format(requiredJavaVersion, javaVersion))
-        } else None
-      },
-      {
-        try {
-          val gitVersion = $("git", "--version")
-          if (VersionComparator.lt(gitVersion, requiredGitVersion)) {
-            Some("Git version %s required, but only found %s".format(requiredGitVersion, gitVersion))
-          } else None
-        } catch {
-          case e: IOException =>
-            Some("Could not find Git version %s or greater.".format(requiredGitVersion))
-        }
-      },
-      {
-        val requiredSubversionVersion = "1.6.17"
-        try {
-          val subversionVersion = $("svn", "--version")
-          if (VersionComparator.lt(subversionVersion, requiredSubversionVersion)) {
-            Some("Subversion version %s required, but only found %s.".format(requiredSubversionVersion, subversionVersion))
-          } else None
-        } catch {
-          case e: IOException =>
-            Some("Could not find Subversion version %s or greater.".format(requiredSubversionVersion))
-        }
-      },
-      {
-        try {
-          val gitSvnVersion = $("git", "svn", "--version")
-          if (VersionComparator.lt(gitSvnVersion, requiredGitVersion)) {
-            Some("git-svn version %s required, but only found %s.".format(requiredGitVersion, gitSvnVersion))
-          } else None
-        } catch {
-          case e: IOException =>
-            Some("Could not find git-svn version %s or greater.".format(requiredGitVersion))
-        }
-      },
-      {
-        try {
-          val tempFile = File.createTempFile("svn-migration-scripts", ".tmp", new File("."))
-          tempFile.deleteOnExit()
-          if (new File(new File("."), tempFile.getName.toUpperCase).exists) {
-            Some("You appear to be running on a case-insensitive file-system. This is unsupported, and can result in data loss.")
-          } else None
-        } catch {
-          case e: IOException =>
-            Some("Unable to determine whether the file-system is case-insensitive. Case-insensitive file-systems are unsupported, and can result in data loss.")
-        }
-      }
-    ).flatten.foreach(println)
+      Dependency("Git", "1.7.7.5", "git"),
+      Dependency("Subversion", "1.6.17", "svn"),
+      Dependency("git-svn", "1.7.7.5", "git", "svn")
+    ).map(command => findVersion(command.invocation : _*).right.flatMap(requireVersion(_, command.required)).fold(
+      (error) => println("%s: ERROR: %s".format(command.name, error)),
+      (version) => println("%s: using version %s".format(command.name, version))
+    ))
+
+    (try {
+      val cwd = new File(".")
+      val tempFile = File.createTempFile("svn-migration-scripts", ".tmp", cwd)
+      tempFile.deleteOnExit()
+      if (new File(cwd, tempFile.getName.toUpperCase).exists)
+        Some("You appear to be running on a case-insensitive file-system. This is unsupported, and can result in data loss.")
+      else None
+    } catch {
+      case e: IOException =>
+        Some("Unable to determine whether the file-system is case-insensitive. Case-insensitive file-systems are unsupported, and can result in data loss.")
+    }).foreach(println)
   }
 }
