@@ -42,8 +42,8 @@ object Tags {
           case ex: RuntimeException => tag_ref
         }
 
-        // Create an annotated tag based on the last commit in the tag, and delete the "branchy" ref for the tag.
-        println("Creating annotated tag: " + tag)
+        // Create an annotated tag based on the last commit in the tag
+        println("Creating annotated tag '%s' at %s.".format(tag, target_ref))
         if (!dryRun) {
           Seq("git", "show", "-s", "--pretty=format:%s%n%n%b", tag_ref) #|
           Process(Seq("git", "tag", "-f", "-a", "-F", "-", tag, target_ref), None,
@@ -68,13 +68,12 @@ object Tags {
       .map(_ stripPrefix "refs/tags/")
       .map(ref => (decodeRef(ref), ref))
 
-    // remove the tags deleted in SVN
+    // remove the tags not present in SVN
     gitTags.foreach {
       case (tag, ref) =>
         if (!(svnTags contains tag)) {
-          if (dryRun) {
-            println("Deleting Git tag not in Subversion: " + ref)
-          } else {
+          println("Deleting Git tag '%s' not in Subversion (at %s).".format(tag, ref))
+          if (!dryRun) {
             Seq("git", "tag", "-d", ref).!
           }
         }
@@ -93,7 +92,7 @@ object Tags {
   /**
    * Fix tag names after conversion.
    */
-  def fixNames() {
+  def fixNames()(implicit dryRun: Boolean) {
     println("# Cleaning tag names")
 
     // list Git tag that needs fixing
@@ -102,12 +101,15 @@ object Tags {
       .filter(t => decodeRef(t) != t)
       .foreach { t =>
         val c = t concat "^{commit}" // commit the tag is referring to
-        Seq("git", "show", "-s", "--pretty=format:%s%n%n%b", c) #|
+        println("Replacing tag '%s' with '%s' at %s.".format(t, cleanRef(t), c))
+        if (!dryRun) {
+          Seq("git", "show", "-s", "--pretty=format:%s%n%n%b", c) #|
             Process(Seq("git", "tag", "-a", "-F", "-", cleanRef(t), c), None,
-              "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", c),
-              "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", c),
-              "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", c)) !;
+                    "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", c),
+                    "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", c),
+                    "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", c)) !;
           Seq("git", "tag", "-d", t).!
+        }
     }
   }
 }

@@ -18,10 +18,9 @@ object Branches {
 
           // create a local branch ref only if it's not trunk (which is already mapped to master)
           // and if it is not an intermediate branch (ex: foo@42)
-          if (!("trunk" == branch) && !isIntermediateRef(branch)) {
-            if (dryRun) {
-              println("Creating the local branch " + branch)
-            } else {
+          if (branch != "trunk" && !isIntermediateRef(branch)) {
+            println("Creating the local branch '%s' for Subversion branch '%s'.".format(branch, branch_ref))
+            if (!dryRun) {
               Seq("git", "branch", "-f", "-t", branch, branch_ref).!
             }
           }
@@ -53,9 +52,8 @@ object Branches {
     gitBranches.foreach {
       case (branch, ref) =>
         if (!(svnBranches contains branch)) {
-          if (dryRun) {
-            println("Deleting the Git branch: " + ref)
-          } else {
+          println("Deleting Git branch '%s' not in Subversion (at %s).".format(branch, ref))
+          if (!dryRun) {
             Seq("git", "branch", "-D", ref).!
           }
         }
@@ -74,7 +72,7 @@ object Branches {
   /**
    * Fix branch names after conversion.
    */
-  def fixNames() {
+  def fixNames()(implicit dryRun: Boolean) {
     println("# Cleaning branch names")
 
     // list Git branches that needs fixing
@@ -82,7 +80,10 @@ object Branches {
       .map(_ stripPrefix "refs/heads/")
       .filter(r => decodeRef(r) != r)
       .foreach { r =>
-        Seq("git", "branch", "-m", r, cleanRef(r)).!
+        println("Replacing branch '%s' with '%s'.".format(r, cleanRef(r)))
+        if (!dryRun) {
+          Seq("git", "branch", "-m", r, cleanRef(r)).!
+        }
       }
   }
 
