@@ -24,9 +24,21 @@ You need the following dependencies:
 * [Git][], with `git-svn` included, version 1.7.7.5 or newer, and
 * [Subversion][], version 1.6.17 or newer.
 
-### A note on Subversion permissions
+#### A note on Subversion permissions
 
 Many of these commands will access your Subversion repository to gather information. In particular, `authors` and `authors-ondemand` need to be run as a user with read access to your entire Subversion tree. If you are using Atlassian OnDemand, by default, no users have read access to the root of the Subversion tree, and as such you will need to grant read access to the user whose credentials you are using for the conversion process. You can read [our documentation on configuring repository permissions at the path level in OnDemand][SVN permissions]; the path that needs to be configured is `/`.
+
+### verify
+
+This command will perform some simple tests to ensure that your system has the required dependencies to convert your Subversion repository to Git. In particular, it checks whether you have sufficiently recent versions of:
+
+* Subversion
+* Git
+* `git-svn`
+
+It also tests whether you're running the command on a case-insensitive file-system. We do not support running conversions with `git-svn` on a case-insensitive file-system; they can in some cases lead to corrupted conversions.
+
+> TODO: How can you tell that corruption has occurred? How can this be avoided e.g. instructions for creating/mounting a case-sensitive disk image on OS X.
 
 ### clean-git
 

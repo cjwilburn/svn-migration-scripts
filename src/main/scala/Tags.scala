@@ -110,7 +110,4 @@ object Tags {
           Seq("git", "tag", "-d", t).!
     }
   }
-
-  private def $(s: String*): String = Process(s).!!.stripLineEnd
-
 }
