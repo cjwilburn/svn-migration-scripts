@@ -56,7 +56,7 @@ object Main extends App {
     implicit val dryRun = options contains "--dry-run"
 
     urls match {
-      case Array() => println("Required: URL of the Subversion repository")
+      case Array() => println("Required: [--dry-run] <Subversion URL>...")
       case _ =>
         Tags.annotate()
         Branches.createLocal()
