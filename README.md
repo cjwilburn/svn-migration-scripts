@@ -24,7 +24,7 @@ You need the following dependencies:
 * [Git][], with `git-svn` included, version 1.7.7.5 or newer, and
 * [Subversion][], version 1.6.17 or newer.
 
-### A note on Subversion permissions
+#### A note on Subversion permissions
 
 Many of these commands will access your Subversion repository to gather information. In particular, `authors` and `authors-ondemand` need to be run as a user with read access to your entire Subversion tree. If you are using Atlassian OnDemand, by default, no users have read access to the root of the Subversion tree, and as such you will need to grant read access to the user whose credentials you are using for the conversion process. You can read [our documentation on configuring repository permissions at the path level in OnDemand][SVN permissions]; the path that needs to be configured is `/`.
 
