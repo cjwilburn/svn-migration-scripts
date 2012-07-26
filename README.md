@@ -32,7 +32,6 @@ Many of these commands will access your Subversion repository to gather informat
 
 This command will perform some simple tests to ensure that your system has the required dependencies to convert your Subversion repository to Git. In particular, it checks whether you have sufficiently recent versions of:
 
-* Java
 * Subversion
 * Git
 * `git-svn`
