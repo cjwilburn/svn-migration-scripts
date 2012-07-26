@@ -28,6 +28,19 @@ You need the following dependencies:
 
 Many of these commands will access your Subversion repository to gather information. In particular, `authors` and `authors-ondemand` need to be run as a user with read access to your entire Subversion tree. If you are using Atlassian OnDemand, by default, no users have read access to the root of the Subversion tree, and as such you will need to grant read access to the user whose credentials you are using for the conversion process. You can read [our documentation on configuring repository permissions at the path level in OnDemand][SVN permissions]; the path that needs to be configured is `/`.
 
+### verify
+
+This command will perform some simple tests to ensure that your system has the required dependencies to convert your Subversion repository to Git. In particular, it checks whether you have sufficiently recent versions of:
+
+* Java
+* Subversion
+* Git
+* `git-svn`
+
+It also tests whether you're running the command on a case-insensitive file-system. We do not support running conversions with `git-svn` on a case-insensitive file-system; they can in some cases lead to corrupted conversions.
+
+> TODO: How can you tell that corruption has occurred? How can this be avoided e.g. instructions for creating/mounting a case-sensitive disk image on OS X.
+
 ### clean-git
 
 This command cleans up a Git repository created with `git-svn`. It creates annotated Git tags corresponding to the Subversion tags detected, creates local branches corresponding to the Subversion branches, and removes any branches or tags which do not currently exist in Subversion (but may have, for example, existed in the past). It also attempts to tidy up tag/branch names which are not allowable in Git.

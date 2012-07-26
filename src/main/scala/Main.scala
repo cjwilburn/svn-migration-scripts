@@ -5,7 +5,8 @@ object Main extends App {
   val commands = Map(
     "authors" -> authors _,
     "authors-ondemand" -> authorsOnDemand _,
-    "clean-git" -> Main.clean _
+    "clean-git" -> Main.clean _,
+    "verify" -> ((options: Array[String], args: Array[String]) => Verify.main(args))
   )
 
   val (command, options, arguments) = parse(args)
