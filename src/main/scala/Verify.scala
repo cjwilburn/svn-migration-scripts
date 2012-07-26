@@ -13,8 +13,8 @@ object Verify {
     }
   
     override def compare(l: String, r: String): Int = {
-      val lefts = l.split("[-.]")
-      val rights = r.split("[-.]")
+      val lefts = l.split("[-._]")
+      val rights = r.split("[-._]")
       var i = 0
       var v = 0
       while (i < math.min(lefts.length, rights.length) && v == 0) {
@@ -28,6 +28,13 @@ object Verify {
   def main(args: Array[String]) {
     val requiredGitVersion = "1.7.7.5"
     Array(
+      {
+        val javaVersion = sys.props("java.runtime.version")
+        val requiredJavaVersion = "1.6.0_26"
+        if (VersionComparator.lt(javaVersion, requiredJavaVersion)) {
+          Some("Java version %s required, but only found %s".format(requiredJavaVersion, javaVersion))
+        } else None
+      },
       {
         try {
           val gitVersion = $("git", "--version")
