@@ -24,6 +24,10 @@ You need the following dependencies:
 * [Git][], with `git-svn` included, version 1.7.7.5 or newer, and
 * [Subversion][], version 1.6.17 or newer.
 
+### A note on Subversion permissions
+
+Many of these commands will access your Subversion repository to gather information. In particular, `authors` and `authors-ondemand` need to be run as a user with read access to your entire Subversion tree. If you are using Atlassian OnDemand, by default, no users have read access to the root of the Subversion tree, and as such you will need to grant read access to the user whose credentials you are using for the conversion process. You can read [our documentation on configuring repository permissions at the path level in OnDemand][SVN permissions]; the path that needs to be configured is `/`.
+
 ### clean-git
 
 This command cleans up a Git repository created with `git-svn`. It creates annotated Git tags corresponding to the Subversion tags detected, creates local branches corresponding to the Subversion branches, and removes any branches or tags which do not currently exist in Subversion (but may have, for example, existed in the past). It also attempts to tidy up tag/branch names which are not allowable in Git.
@@ -55,10 +59,6 @@ This time, the username and password are both required. This generates an exampl
 
     j.doe = Jane Doe <jane@some.company.example.com>
     …
-
-#### Subversion permissions
-
-For either of these commands (`authors` and `authors-ondemand`) to succeed when run against an OnDemand instance, you may need to adjust Subversion permissions to grant the user whose credentials you use permission to read the root of the Subversion file system. This permission is not granted by default. Information on granting repository permissions at the path level in Atlassian OnDemand is [available in the OnDemand documentation][SVN permissions]; the path that should be configured is `/`.
 
 [SBT]: https://github.com/harrah/xsbt/wiki/
 [download a JDK]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
