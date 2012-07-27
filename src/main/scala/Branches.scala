@@ -27,46 +27,29 @@ object Branches {
       }
   }
 
-  /**
-   * Remove branches that does not exist in Subversion.
-   */
-  def checkObsolete(svnUrls: Array[String])(implicit dryRun: Boolean) {
+  // Reconcile branches between Git/Subversion.
+  def checkObsolete(urls: Array[String])(implicit dryRun: Boolean) {
     println("# Checking for obsolete branches...")
 
-    // find the list of branches in SVN
-    val svnBranches = Svn.findSvnItems(svnUrls)
-
-    // find the list of branches in Git
-    // (split is safe as ref names cannot contain spaces)
+    val svnBranches = Svn.findItems(urls)
+    // Map of (branch as it appears in Subversion -> branch as it appears in Git).
+    // e.g. ("my branch" -> "my%20branch")
     val gitBranches = Seq("git", "for-each-ref", "refs/heads", "--format=%(refname)").lines
-      .map(_ stripPrefix "refs/heads/")
-      // do not compare master
-      .filterNot(_ == "master")
-      // clean the Git branch names
-      .map(ref => (decodeRef(ref), ref)) // (cleaned-up name, actual ref name),
-                                        // ex: ("my branch", "my%20branch")
-                                        // the cleaned-up name will match the actual name of the branch in Subversion
+      .map(_.stripPrefix("refs/heads/")).filterNot(_ == "master").map(branch => decodeRef(branch) -> branch).toMap
 
-    // remove the branches deleted in SVN
-    // (git-svn does not index branch and tag deletions, and keep their remotes)
-    gitBranches.foreach {
-      case (branch, ref) =>
-        if (!(svnBranches contains branch)) {
-          println("Deleting Git branch '%s' not in Subversion (at %s).".format(branch, ref))
-          if (!dryRun) {
-            Seq("git", "branch", "-D", ref).!
-          }
-        }
+    // Remove branches deleted in Subversion.
+    val excessBranches = gitBranches -- svnBranches
+    if (excessBranches.nonEmpty) {
+      excessBranches.values.foreach { branch =>
+        println("Deleting Git branch '%s' not in Subversion.".format(branch))
+        if (!dryRun) Seq("git", "branch", "-D", branch) !
+      }
+    } else {
+      println("No obsolete branches to remove.")
     }
 
-    // check for missing branches in Git
-    // (note: this should never happen if the correct branch root(s) were given to git-svn)
-    svnBranches.foreach {
-      branch =>
-        if (gitBranches.filter{ case (b, _) => b == branch }.isEmpty) {
-          println("This Subversion branch is not in Git: " + branch)
-        }
-    }
+    // Should never do anything if the correct branch roots were given to git-svn.
+    (svnBranches diff gitBranches.keys.toSeq).foreach("WARNING: Subversion branch missing in Git: " + _)
   }
 
   /**

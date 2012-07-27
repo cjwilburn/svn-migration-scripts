@@ -8,7 +8,7 @@ object `package` {
 
 object Svn {
 
-  def findSvnItems(svnUrls: Array[String]): Array[String] = {
+  def findItems(svnUrls: Array[String]): Array[String] = {
     val strippedUrls = svnUrls.map(_ stripSuffix "/")
     val allBranchUrls = strippedUrls.flatMap {
       url =>
