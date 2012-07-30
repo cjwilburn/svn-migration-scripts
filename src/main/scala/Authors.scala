@@ -73,8 +73,6 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   }
 
   private def fetchList(builder: ProcessBuilder) = {
-    println("# Generating list of authors...")
-
     val authors = collection.mutable.Set[String]()
     val proc = builder.run(BasicIO.standard(false) withOutput {
       is => {
@@ -86,7 +84,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     })
 
     if (proc.exitValue != 0) {
-      println("SVN command failed!")
+      Console.err.println("SVN command failed!")
       sys.exit(1)
     }
 
