@@ -6,7 +6,7 @@ object Branches {
   /**
    * Create local branches out of svn branches.
    */
-  def createLocal()(implicit dryRun: Boolean) {
+  def createLocal()(implicit options: Clean.Options) {
     println("# Creating local branches...")
 
     Seq("git", "for-each-ref", "--format=%(refname)", "refs/remotes/").lines
@@ -18,17 +18,15 @@ object Branches {
 
           // create a local branch ref only if it's not trunk (which is already mapped to master)
           // and if it is not an intermediate branch (ex: foo@42)
-          if (branch != "trunk" && !isIntermediateRef(branch)) {
+          if (branch != "trunk" && !isIntermediateRef(branch) && options.shouldCreate) {
             println("Creating the local branch '%s' for Subversion branch '%s'.".format(branch, branch_ref))
-            if (!dryRun) {
-              Seq("git", "branch", "-f", "-t", branch, branch_ref).!
-            }
+            Seq("git", "branch", "-f", "-t", branch, branch_ref) !
           }
       }
   }
 
   // Reconcile branches between Git/Subversion.
-  def checkObsolete(urls: Array[String])(implicit dryRun: Boolean) {
+  def checkObsolete(urls: Array[String])(implicit options: Clean.Options) {
     println("# Checking for obsolete branches...")
 
     val svnBranches = Svn.findItems(urls)
@@ -39,10 +37,10 @@ object Branches {
 
     // Remove branches deleted in Subversion.
     val excessBranches = gitBranches -- svnBranches
-    if (excessBranches.nonEmpty) {
+    if (excessBranches.nonEmpty && options.shouldDelete) {
       excessBranches.values.foreach { branch =>
         println("Deleting Git branch '%s' not in Subversion.".format(branch))
-        if (!dryRun) Seq("git", "branch", "-D", branch) !
+        Seq("git", "branch", "-D", branch) !
       }
     } else {
       println("No obsolete branches to remove.")
@@ -55,7 +53,7 @@ object Branches {
   /**
    * Fix branch names after conversion.
    */
-  def fixNames()(implicit dryRun: Boolean) {
+  def fixNames()(implicit options: Clean.Options) {
     println("# Cleaning branch names")
 
     // list Git branches that needs fixing
@@ -63,9 +61,9 @@ object Branches {
       .map(_ stripPrefix "refs/heads/")
       .filter(r => decodeRef(r) != r)
       .foreach { r =>
-        println("Replacing branch '%s' with '%s'.".format(r, cleanRef(r)))
-        if (!dryRun) {
-          Seq("git", "branch", "-m", r, cleanRef(r)).!
+        if (options.shouldDelete) {
+          println("Replacing branch '%s' with '%s'.".format(r, cleanRef(r)))
+          Seq("git", "branch", "-m", r, cleanRef(r)) !
         }
       }
   }
