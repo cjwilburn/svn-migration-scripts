@@ -6,3 +6,4 @@ project/target
 target
 .ensime
 .ensime_lucene
+.DS_Store
