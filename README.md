@@ -46,9 +46,9 @@ This command cleans up a Git repository created with `git-svn`. It creates annot
 
 The command is run as follows:
 
-    $ java -jar svn-migration-scripts.jar clean-git [--dry-run] http://repository.example.org/svn
+    $ java -jar svn-migration-scripts.jar clean-git [--dry-run] [--no-delete] http://repository.example.org/svn
 
-If the `--dry-run` option is specified, the command will not perform any actions, but will instead simply show what would be done.
+If the `--dry-run` option is specified, the command will not perform any actions, but will instead simply show what would be done. If the `--no-delete` option is specified, branches and tags will be created but none will be removed.
 
 ### authors
 

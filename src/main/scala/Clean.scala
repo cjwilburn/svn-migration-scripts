@@ -1,6 +1,8 @@
 object Clean extends Command {
+  case class Options(shouldCreate: Boolean, shouldDelete: Boolean)
+
   val name = "clean-git"
-  override val usage = Some("[--dry-run] <url>...")
+  override val usage = Some("[--dry-run] [--no-delete] <url>...")
   val help = "Cleans conversion artefacts from a converted Subversion repository."
 
   def parse(arguments: Array[String]) = {
@@ -10,7 +12,8 @@ object Clean extends Command {
 
   def apply(options: Array[String], arguments: Array[String]) = {
     val svnRoots = Set("branches", "tags").map { r => (r, arguments.map { u => { u stripSuffix "/"} + '/' + r})}.toMap
-    implicit val dryRun = options.contains("--dry-run")
+    val dryRun = options.contains("--dry-run")
+    implicit val opts = Options(!dryRun, !(dryRun || options.contains("--no-delete")))
 
     Tags.annotate()
     Branches.createLocal()
