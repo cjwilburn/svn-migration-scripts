@@ -3,7 +3,13 @@ import sys.process._
 object Authors extends Command {
   val name = "authors"
   override val usage = Some("hostname [username [password]]")
-  val help = "Generates an initial authors mapping for the committers to a Subversion repository."
+  val help = """Generates an initial authors mapping for the committers to a Subversion
+repository.
+
+Each line of the author mapping associates a Subversion commiter with their
+full name and e-mail address. For example:
+
+jane.doe = Jane Doe <jane.d@example.org>"""
 
   def parse(arguments: Array[String]) = {
     val minimumArguments = arguments.headOption.flatMap(onDemandBaseUrl).map(url => 3).getOrElse(1)
