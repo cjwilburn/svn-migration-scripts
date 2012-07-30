@@ -1,7 +1,10 @@
 import java.io.{File, IOException}
 import sys.process._
 
-object Verify {
+object Verify extends Command {
+  val name = "verify"
+  val help = "Verifies that dependencies are present and the environment is suitable."
+
   object VersionComparator extends Ordering[String] {
     def atoi(s: String) = {
       var i = 0
@@ -35,27 +38,33 @@ object Verify {
     if (VersionComparator.lt(actual, required)) Left("Version %s required (found %s).".format(required, actual)) else Right(actual)
 
   case class Dependency(name: String, required: String, invocation: String*)
+
+  def parse(arguments: Array[String]) = Right((Array[String](), Array[String]()))
   
-  def main(args: Array[String]) {
+  def apply(options: Array[String], arguments: Array[String]) = {
+    var anyError = false
     Array(
       Dependency("Git", "1.7.7.5", "git"),
       Dependency("Subversion", "1.6.17", "svn"),
       Dependency("git-svn", "1.7.7.5", "git", "svn")
     ).map(command => findVersion(command.invocation : _*).right.flatMap(requireVersion(_, command.required)).fold(
-      (error) => println("%s: ERROR: %s".format(command.name, error)),
+      (error) => { anyError = true; println("%s: ERROR: %s".format(command.name, error)) },
       (version) => println("%s: using version %s".format(command.name, version))
     ))
 
-    (try {
+    try {
       val cwd = new File(".")
       val tempFile = File.createTempFile("svn-migration-scripts", ".tmp", cwd)
       tempFile.deleteOnExit()
-      if (new File(cwd, tempFile.getName.toUpperCase).exists)
-        Some("You appear to be running on a case-insensitive file-system. This is unsupported, and can result in data loss.")
-      else None
+      if (new File(cwd, tempFile.getName.toUpperCase).exists) {
+        println("You appear to be running on a case-insensitive file-system. This is unsupported, and can result in data loss.")
+      }
     } catch {
       case e: IOException =>
-        Some("Unable to determine whether the file-system is case-insensitive. Case-insensitive file-systems are unsupported, and can result in data loss.")
-    }).foreach(println)
+        anyError = true
+        println("Unable to determine whether the file-system is case-insensitive. Case-insensitive file-systems are unsupported, and can result in data loss.")
+    }
+
+    anyError
   }
 }
