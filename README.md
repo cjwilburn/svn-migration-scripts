@@ -26,7 +26,7 @@ You need the following dependencies:
 
 #### A note on Subversion permissions
 
-Many of these commands will access your Subversion repository to gather information. In particular, `authors` and `authors-ondemand` need to be run as a user with read access to your entire Subversion tree. If you are using Atlassian OnDemand, by default, no users have read access to the root of the Subversion tree, and as such you will need to grant read access to the user whose credentials you are using for the conversion process. You can read [our documentation on configuring repository permissions at the path level in OnDemand][SVN permissions]; the path that needs to be configured is `/`.
+Many of these commands will access your Subversion repository to gather information. In particular, `authors` needs to be run as a user with read access to your entire Subversion tree. If you are using Atlassian OnDemand, by default, no users have read access to the root of the Subversion tree, and as such you will need to grant read access to the user whose credentials you are using for the conversion process. You can read [our documentation on configuring repository permissions at the path level in OnDemand][SVN permissions]; the path that needs to be configured is `/`.
 
 ### verify
 
@@ -63,16 +63,9 @@ The output file is of the format:
     j.doe = j.doe <j.doe@mycompany.com>
     …
 
-### authors-ondemand
+#### The authors command in OnDemand
 
-There is another version of the `authors` command available if you're migrating from Atlassian OnDemand. You can instead run:
-
-    $ java -jar svn-migration-scripts.jar authors-ondemand your-instance.atlassian.net username password
-
-This time, the username and password are both required. This generates an example author mapping, as with the `authors` command, however this command tries to look up user details from your OnDemand instance. For example, rather than the file created above, it might create instead:
-
-    j.doe = Jane Doe <jane@some.company.example.com>
-    …
+If you run the authors command against an Atlassian OnDemand instance, the command will attempt to look up the full name and e-mail address of each committer in JIRA. If the command is unable to find a corresponding JIRA user for a Subversion committer, the username will be present in the generated authors list without any mapping. *You will need to edit the authors list to supply a valid mapping for such users before you can use the authors file in a conversion*. All such users will appear at the beginning of the generated authors file.
 
 [SBT]: https://github.com/harrah/xsbt/wiki/
 [download a JDK]: http://www.oracle.com/technetwork/java/javase/downloads/index.html

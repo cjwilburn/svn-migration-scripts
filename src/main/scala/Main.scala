@@ -4,7 +4,6 @@ object Main extends App {
 
   val commands = Map(
     "authors" -> authors _,
-    "authors-ondemand" -> authorsOnDemand _,
     "clean-git" -> Main.clean _,
     "verify" -> ((options: Array[String], args: Array[String]) => Verify.main(args))
   )
@@ -36,17 +35,19 @@ object Main extends App {
     commands.keys.toArray.sorted.foreach(c => println(" - " + c))
   }
 
-  /**
-   * Generate the initial author list from the Subversion repository.
-   */
-  def authors(options: Array[String], arguments: Array[String]) =
-    Authors.process(arguments)
+  def onDemandBaseUrl(url: String) =
+    """(?:https?://)?([^/]+\.(?:jira\.com|jira-dev\.com|atlassian\.net))(?:.*?)""".r.findFirstMatchIn(url).map(_.group(1))
 
-  /**
-   * Generate the initial author list from an Atlassian OnDemand instance.
-   */
-  def authorsOnDemand(options: Array[String], arguments: Array[String]) =
-    Authors.processOnDemand(arguments)
+  // Generate the initial author list.
+  def authors(options: Array[String], arguments: Array[String]) = {
+    arguments.headOption.flatMap(onDemandBaseUrl) match {
+      case Some(host) =>
+        arguments(0) = host
+        println("Authors.processOnDemand(arguments)")
+      case None =>
+        println("Authors.process(arguments)")
+    }
+  }
 
   /**
    * Clean the repository after the initial conversion by git-svn.
