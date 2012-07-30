@@ -54,24 +54,16 @@ object Authors {
     }
 
   private def fetchList(builder: ProcessBuilder) = {
-    import xml.pull._
     println("# Generating list of authors...")
 
     val authors = collection.mutable.Set[String]()
-    val proc = builder.run(BasicIO.standard(false) withOutput { is =>
-      val reader = new XMLEventReader(io.Source.fromInputStream(is))
-      // Add the content of the author elements to the authors set declared above.
-      reader.foreach(_ match {
-        case EvElemStart(null, "author", _, _) => {
-          authors += reader.takeWhile(_ match {
-            case EvElemEnd(null, "author") => false
-            case _ => true
-          }).collect(_ match {
-            case EvText(content) => content
-          }).foldLeft(new StringBuilder)(_ append _).toString
-        }
-        case _ => ()
-      })
+    val proc = builder.run(BasicIO.standard(false) withOutput {
+      is => {
+        import scales.xml._
+        import ScalesXml._
+        val iterator = iterate(List("log"l, "logentry"l, "author"l), pullXml(is))
+        iterator.map(path => path.children.collect { case Text(t) => t }.foldLeft(new StringBuilder)(_ append _).toString).foreach(authors += _)
+      }
     })
 
     if (proc.exitValue != 0) {
