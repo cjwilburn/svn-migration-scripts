@@ -16,12 +16,20 @@ object Main extends App {
     }
   }
 
-  val command = args.headOption.flatMap(command => commands.find(_.name == command.toLowerCase)).getOrElse(Help)
-  command.parse(args.drop(1)).fold(
-    (error) => {
-      println(error)
-      command.usage.map(u => println(command.name + " usage: " + u))
-    },
-    (parsed) => sys.exit(if (command(parsed._1, parsed._2)) 1 else 0)
-  )
+  val (helpForCommand, realArgs) = args.partition(_.toLowerCase == "--help")
+  val command = realArgs.headOption.flatMap(command => commands.find(_.name == command.toLowerCase)).getOrElse(Help)
+  if (helpForCommand.nonEmpty) {
+    println(command.name)
+    command.usage.foreach(println)
+    println()
+    println(command.help)
+  } else {
+    command.parse(args.drop(1)).fold(
+      (error) => {
+        println(error)
+        command.usage.map(u => println(command.name + " usage: [--help] " + u))
+      },
+      (parsed) => if (command(parsed._1, parsed._2)) sys.exit(1)
+    )
+  }
 }
