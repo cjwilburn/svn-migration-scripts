@@ -16,7 +16,7 @@ Having built the JAR, you can run the scripts it contains. All commands have the
 
     $ java -jar svn-migration-scripts.jar <command> <args>…
 
-A list of available commands can be obtained by omitting the command and arguments (e.g., `java -jar svn-migration-scripts.jar`).
+A list of available commands can be obtained by omitting the command and arguments (e.g., `java -jar svn-migration-scripts.jar`). All commands optionally take a `--help` argument, displaying usage information about the command.
 
 You need the following dependencies:
 
