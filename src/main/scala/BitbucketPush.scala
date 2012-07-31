@@ -2,9 +2,9 @@ import dispatch._
 import dispatch.liftjson.Js._
 import net.liftweb.json._
 
-object BitbucketCreate extends Command {
-  val name = "bitbucket-create"
-  val help = "Create a repository on Bitbucket."
+object BitbucketPush extends Command {
+  val name = "bitbucket-push"
+  val help = "Push to a repository on Bitbucket, optionally creating it."
   override val usage = Some("<username> <password> [<owner>] <repository-name>")
 
   def parse(arguments: Array[String]) = {
@@ -41,20 +41,29 @@ object BitbucketCreate extends Command {
       } yield slug
     }).headOption.toRight("Repository does not exist.")
 
+  def push(username: String, password: String, owner: String, slug: String): Either[String, Unit] = {
+    import Request.{encode_% => e}
+    import sys.process._
+    val remote = "https://%s:%s@bitbucket.org/%s/%s".format(e(username), e(password), owner, slug)
+    val process =
+      ("git remote show bitbucket" #|| Seq("git", "remote", "add", "bitbucket", remote)) #&&
+      ("git push --all bitbucket" #&& "git push --tags bitbucket")
+    if (process.! == 0) Right(()) else Left("Pushing the repository to Bitbucket failed.")
+  }
+
   def apply(options: Array[String], arguments: Array[String]): Boolean = {
     val Array(username, password, owner, name) = arguments
 
-    val http = new Http/* with NoLogging*/
+    val http = new Http with NoLogging
     val api = :/("api.bitbucket.org").secure.as_!(username, password) / "1.0"
 
-    var slug = for {
+    (for {
       _ <- existing(http, api, name, owner).left
-      s <- create(http, api, name, owner).right
-    } yield s
-
-    slug.fold(
-      error => true,
-      slug => false
+      slug <- create(http, api, name, owner).right
+      result <- push(username, password, owner, slug).right
+    } yield result).fold(
+      error => { println("An error occurred while pushing to Bitbucket: " + error); true },
+      unit => { println("Successfully pushed to Bitbucket."); false }
     )
   }
 }
