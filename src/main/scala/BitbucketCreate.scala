@@ -15,13 +15,13 @@ object BitbucketCreate extends Command {
     }
   }
 
-  def create(http: Http, api: Request, name: String, owner: String): Either[String, String] = {
-    http((api / "repositories" << Array(
+  def create(http: Http, api: Request, name: String, owner: String): Either[String, String] =
+    http(api / "repositories" << Array(
       "name" -> name,
       "scm" -> "git",
       "owner" -> owner,
       "is_private" -> "True"
-    )) ># { json =>
+    ) ># { json =>
       for {
         JObject(body) <- json
         JField("slug", JString(slug)) <- body
@@ -29,9 +29,8 @@ object BitbucketCreate extends Command {
     } >! {
       case ex: StatusCode => return Left(ex.contents)
     }).headOption.toRight("Creation was successful but response lacked slug.")
-  }
 
-  def existing(http: Http, api: Request, name: String, owner: String): Either[String, String] = {
+  def existing(http: Http, api: Request, name: String, owner: String): Either[String, String] =
     http(api / "user" / "repositories" ># { json =>
       for {
         JArray(body) <- json
@@ -41,7 +40,6 @@ object BitbucketCreate extends Command {
         JField("slug", JString(slug)) <- repo if repoOwner == owner && repoName == name
       } yield slug
     }).headOption.toRight("Repository does not exist.")
-  }
 
   def apply(options: Array[String], arguments: Array[String]): Boolean = {
     val Array(username, password, owner, name) = arguments
