@@ -1,7 +1,7 @@
 import scala.Array
 
 object Main extends App {
-  val commands = Array(Authors, Clean, Verify, BitbucketCreate)
+  val commands = Array(Authors, Clean, Verify, BitbucketPush)
 
   object Help extends Command {
     val name = "help"
