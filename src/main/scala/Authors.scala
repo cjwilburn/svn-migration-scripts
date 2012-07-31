@@ -2,7 +2,7 @@ import sys.process._
 
 object Authors extends Command {
   val name = "authors"
-  override val usage = Some("hostname [username [password]]")
+  override val usage = Some("<hostname> [<username> [<password>]]")
   val help = """Generates an initial authors mapping for the committers to a Subversion
 repository.
 
