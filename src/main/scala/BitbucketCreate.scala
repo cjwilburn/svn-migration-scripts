@@ -15,28 +15,48 @@ object BitbucketCreate extends Command {
     }
   }
 
-  def create(http: Http, api: Request, name: String, owner: String): Boolean = {
+  def create(http: Http, api: Request, name: String, owner: String): Either[String, String] = {
     http((api / "repositories" << Array(
       "name" -> name,
       "scm" -> "git",
       "owner" -> owner,
       "is_private" -> "True"
-    )).>|.>! {
-      case ex: StatusCode =>
-        println("Error " + ex.code + " creating repository:")
-        println(ex.contents)
-        return true
-    })
+    )) ># { json =>
+      for {
+        JObject(body) <- json
+        JField("slug", JString(slug)) <- body
+      } yield slug
+    } >! {
+      case ex: StatusCode => return Left(ex.contents)
+    }).headOption.toRight("Creation was successful but response lacked slug.")
+  }
 
-    false
+  def existing(http: Http, api: Request, name: String, owner: String): Either[String, String] = {
+    http(api / "user" / "repositories" ># { json =>
+      for {
+        JArray(body) <- json
+        JObject(repo) <- body
+        JField("owner", JString(repoOwner)) <- repo
+        JField("name", JString(repoName)) <- repo
+        JField("slug", JString(slug)) <- repo if repoOwner == owner && repoName == name
+      } yield slug
+    }).headOption.toRight("Repository does not exist.")
   }
 
   def apply(options: Array[String], arguments: Array[String]): Boolean = {
     val Array(username, password, owner, name) = arguments
 
-    val http = new Http with NoLogging
+    val http = new Http/* with NoLogging*/
     val api = :/("api.bitbucket.org").secure.as_!(username, password) / "1.0"
 
-    create(http, api, name, owner)
+    var slug = for {
+      _ <- existing(http, api, name, owner).left
+      s <- create(http, api, name, owner).right
+    } yield s
+
+    slug.fold(
+      error => true,
+      slug => false
+    )
   }
 }
