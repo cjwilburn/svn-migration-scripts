@@ -74,13 +74,11 @@ jane.doe = Jane Doe <jane.d@example.org>"""
 
   private def fetchList(builder: ProcessBuilder) = {
     val authors = collection.mutable.Set[String]()
-    val proc = builder.run(BasicIO.standard(false) withOutput {
-      is => {
-        import scales.xml._
-        import ScalesXml._
-        val iterator = iterate(List("log"l, "logentry"l, "author"l), pullXml(is))
-        iterator.map(path => path.children.collect { case Text(t) => t }.foldLeft(new StringBuilder)(_ append _).toString).foreach(authors += _)
-      }
+    val proc = builder.run(BasicIO.standard(false) withOutput { is =>
+      import scales.xml._
+      import ScalesXml._
+      val iterator = iterate(List("log"l, "logentry"l, "author"l), pullXml(is))
+      iterator.map(path => path.children.collect { case Text(t) => t }.foldLeft(new StringBuilder)(_ append _).toString).foreach(authors += _)
     })
 
     if (proc.exitValue != 0) {
