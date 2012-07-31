@@ -63,6 +63,11 @@ The output file is of the format:
     j.doe = j.doe <j.doe@mycompany.com>
     …
 
+Once the initial file has been generated *it is important to edit it so that it contains the **full names** and e-mail addresses of the committers to the Subversion repository*. If this is not done, commits may not be associated with the appropriate users when you push your repository to Bitbucket. For example, you might edit the file generated above to read
+
+    j.doe = Jane Doe <jane@somecompany.example>
+    …
+
 #### The authors command in OnDemand
 
 If you run the authors command against an Atlassian OnDemand instance, the command will attempt to look up the full name and e-mail address of each committer in JIRA. If the command is unable to find a corresponding JIRA user for a Subversion committer, the username will be present in the generated authors list without any mapping. *You will need to edit the authors list to supply a valid mapping for such users before you can use the authors file in a conversion*. All such users will appear at the beginning of the generated authors file.
