@@ -2,7 +2,7 @@ object Clean extends Command {
   case class Options(shouldCreate: Boolean, shouldDelete: Boolean)
 
   val name = "clean-git"
-  override val usage = Some("[--dry-run] [--no-delete] <url>...")
+  override val usage = Some("[--dry-run] [--no-delete] [--strip-metadata] <url>...")
   val help = "Cleans conversion artefacts from a converted Subversion repository."
 
   def parse(arguments: Array[String]) = {
