@@ -15,12 +15,7 @@ object BitbucketCreate extends Command {
     }
   }
 
-  def apply(options: Array[String], arguments: Array[String]): Boolean = {
-    val Array(username, password, owner, name) = arguments
-
-    val http = new Http with NoLogging
-    val api = :/("api.bitbucket.org").secure.as_!(username, password) / "1.0"
-
+  def create(http: Http, api: Request, name: String, owner: String): Boolean = {
     http((api / "repositories" << Array(
       "name" -> name,
       "scm" -> "git",
@@ -34,5 +29,14 @@ object BitbucketCreate extends Command {
     })
 
     false
+  }
+
+  def apply(options: Array[String], arguments: Array[String]): Boolean = {
+    val Array(username, password, owner, name) = arguments
+
+    val http = new Http with NoLogging
+    val api = :/("api.bitbucket.org").secure.as_!(username, password) / "1.0"
+
+    create(http, api, name, owner)
   }
 }
