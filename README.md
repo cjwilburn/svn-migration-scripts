@@ -72,9 +72,18 @@ Once the initial file has been generated *it is important to edit it so that it 
 
 If you run the authors command against an Atlassian OnDemand instance, the command will attempt to look up the full name and e-mail address of each committer in JIRA. If the command is unable to find a corresponding JIRA user for a Subversion committer, the username will be present in the generated authors list without any mapping. *You will need to edit the authors list to supply a valid mapping for such users before you can use the authors file in a conversion*. All such users will appear at the beginning of the generated authors file.
 
+### bitbucket-push
+
+This command pushes the Git repository in the directory it is run from to a repository in [Bitbucket][], creating it if it does not exist. It is run as follows:
+
+    $ java -jar svn-migration-scripts.jar bitbucket-push <username> <password> [<owner>] <repository-name>
+
+This will push the Git repository in the current directory to the Bitbucket repository with the name `repository-name` owned by `owner`; if this repository does not exist, it is created, and if the `owner` option is omitted, it defaults to `username`. `username` and `password` are the credentials used to authenticate against Bitbucket. Typically, you might pass your organisation's Bitbucket team as the owner.
+
 [SBT]: https://github.com/harrah/xsbt/wiki/
 [download a JDK]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
 [install SBT]: https://github.com/harrah/xsbt/wiki/Getting-Started-Setup
 [Git]: http://git-scm.com/
 [Subversion]: http://subversion.apache.org/
 [SVN permissions]: https://confluence.atlassian.com/display/AOD/Configuring+repository+permissions+for+a+project#Configuringrepositorypermissionsforaproject-Configuringrepositorypermissionsatthepathlevel
+[Bitbucket]: http://bitbucket.org
