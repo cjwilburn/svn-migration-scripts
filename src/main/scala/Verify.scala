@@ -41,6 +41,36 @@ object Verify extends Command {
 
   def parse(arguments: Array[String]) = Right(Array(), Array())
 
+  def checkCaseSensitivity: Boolean =
+    try {
+      val cwd = new File(".")
+      val tempFile = File.createTempFile("svn-migration-scripts", ".tmp", cwd)
+      tempFile.deleteOnExit()
+      if (new File(cwd, tempFile.getName.toUpperCase).exists)
+        println("You appear to be running on a case-insensitive file-system. This is unsupported, and can result in data loss.")
+      false
+    } catch {
+      case e: IOException =>
+        println("Unable to determine whether the file-system is case-insensitive. Case-insensitive file-systems are unsupported, and can result in data loss.")
+        true
+    }
+
+  def checkHttpConnectivity: Boolean = {
+    import java.net.{InetSocketAddress, Proxy, Socket}
+    import java.util.concurrent.TimeUnit._
+
+    val socket = new Socket(Proxy.NO_PROXY)
+    try {
+      socket.connect(new InetSocketAddress("atlassian.com", 80), MILLISECONDS.convert(30, SECONDS).asInstanceOf[Int])
+      socket.close()
+      false
+    } catch {
+      case ex: Exception =>
+        println("Cannot connect directly to internet. This may interfere with your ability to clone Subversion repositories and push Git repositories.")
+        true
+    }
+  }
+
   def apply(options: Array[String], arguments: Array[String]) = {
     var anyError = false
     Array(
@@ -52,19 +82,8 @@ object Verify extends Command {
       (version) => println("%s: using version %s".format(command.name, version))
     ))
 
-    try {
-      val cwd = new File(".")
-      val tempFile = File.createTempFile("svn-migration-scripts", ".tmp", cwd)
-      tempFile.deleteOnExit()
-      if (new File(cwd, tempFile.getName.toUpperCase).exists) {
-        println("You appear to be running on a case-insensitive file-system. This is unsupported, and can result in data loss.")
-      }
-    } catch {
-      case e: IOException =>
-        anyError = true
-        println("Unable to determine whether the file-system is case-insensitive. Case-insensitive file-systems are unsupported, and can result in data loss.")
-    }
-
+    anyError = anyError || checkCaseSensitivity
+    anyError = anyError || checkHttpConnectivity
     anyError
   }
 }
