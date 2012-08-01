@@ -1,6 +1,7 @@
 import dispatch._
 import dispatch.liftjson.Js._
 import net.liftweb.json._
+import sys.process._
 
 object BitbucketPush extends Command {
   val name = "bitbucket-push"
@@ -41,28 +42,27 @@ object BitbucketPush extends Command {
       } yield slug
     }).headOption
 
-  def repoSlug(http: Http, api: Request, name: String, owner: String): Either[String, String] =
+  def repoSlug(api: Request, name: String, owner: String): Either[String, String] = {
+    val http = new Http with NoLogging
     existing(http, api, name, owner).toRight("non-extant").left.flatMap(error => create(http, api, name, owner))
-
-  def push(username: String, password: String, owner: String, slug: String): Either[String, String] = {
-    import Request.{encode_% => e}
-    import sys.process._
-    val remote = "https://%s:%s@bitbucket.org/%s/%s".format(e(username), e(password), owner, slug)
-    val process =
-      ("git remote show bitbucket" #|| Seq("git", "remote", "add", "bitbucket", remote)) #&&
-      ("git push --all bitbucket" #&& "git push --tags bitbucket")
-    Either.cond(process.! == 0, "Successfully pushed to Bitbucket.", "Pushing the repository to Bitbucket failed.")
   }
 
+  def ensureRemote(remoteUrl: String): Either[String, String] =
+    Either.cond("git remote show bitbucket" #|| Seq("git", "remote", "add", "bitbucket", remoteUrl) ! ProcessLogger(s => ()) == 0,
+      "bitbucket", "Error creating Git remote: " + remoteUrl)
+
+  def push(remote: String): Either[String, String] =
+    Either.cond((Seq("git", "push", "--all", remote) #&& Seq("git", "push", "--tags", remote)).! == 0,
+      "Successfully pushed to Bitbucket", "Pushing repository to Bitbucket failed.")
+
   def apply(options: Array[String], arguments: Array[String]): Boolean = {
+    import Request.{encode_% => e}
     val Array(username, password, owner, name) = arguments
 
-    val http = new Http with NoLogging
-    val api = :/("api.bitbucket.org").secure.as_!(username, password) / "1.0"
-
     (for {
-      slug <- repoSlug(http, api, name, owner).right
-      result <- push(username, password, owner, slug).right
+      slug <- repoSlug(:/("api.bitbucket.org").secure.as_!(username, password) / "1.0", name, owner).right
+      remote <- ensureRemote("https://%s:%s@bitbucket.org/%s/%s".format(e(username), e(password), owner, slug)).right
+      result <- push(remote).right
     } yield result).fold(
       error => { println("ERROR: " + error); true },
       message => { println(message); false }
