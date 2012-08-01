@@ -30,7 +30,13 @@ Many of these commands will access your Subversion repository to gather informat
 
 ### verify
 
-This command will perform some simple tests to ensure that your system has the required dependencies to convert your Subversion repository to Git. In particular, it checks whether you have sufficiently recent versions of:
+This command will perform some simple tests to ensure that your system has the required dependencies to convert your Subversion repository to Git.
+
+The command is run as follows:
+
+    $ java -jar svn-migration-scripts.jar verify
+
+In particular, the command checks whether you have sufficiently recent versions of:
 
 * Subversion
 * Git
@@ -41,9 +47,7 @@ The other tests it performs are:
 * whether it is possible to directly connect to the internet, and
 * whether you're running the command on a case-insensitive file-system.
 
-We do not support running conversions with `git-svn` on a case-insensitive file-system; they can in some cases lead to corrupted conversions.
-
-> TODO: How can you tell that corruption has occurred?
+We do not support running conversions with `git-svn` on a case-insensitive file-system; they can in some cases lead to corrupted conversions. Such corrupted conversions may be evident by having two Subversion branches (with names differing only in case) which appear to me unified in the Git conversion, or a file that always appears modified as per `git status`.
 
 ##### Example
 
