@@ -20,7 +20,6 @@ object Svn {
 }
 
 object Git {
-
   def isIntermediateRef(ref: String) = {
     "^.+@\\d+$".r.findAllIn(ref).hasNext
   }
@@ -40,4 +39,5 @@ object Git {
                   .replaceAll("""(?:\s+|\@\{|[~^:*?/]+|\[+|\]+)""", "-")
   }
 
+  def dir: File = new File(sys.env.getOrElse("GIT_DIR", ".git"))
 }

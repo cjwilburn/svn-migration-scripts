@@ -48,7 +48,7 @@ The command is run as follows:
 
     $ java -jar svn-migration-scripts.jar clean-git [--dry-run] [--no-delete] [--strip-metadata] <repository-url> ...
 
-If the `--dry-run` option is specified, the command will not perform any actions, but will instead simply show what would be done. If the `--no-delete` option is specified, branches and tags will be created but none will be removed. If the `--strip-metadata` option is specified, the infomartion in Git commit messages created by `git-svn` specifiying the Subversion revision corresponding to the Git commit will be removed.
+If the `--dry-run` option is specified, the command will not perform any actions, but will instead simply show what would be done. If the `--no-delete` option is specified, branches and tags will be created but none will be removed. If the `--strip-metadata` option is specified, the infomartion in Git commit messages created by `git-svn` specifiying the Subversion revision corresponding to the Git commit will be removed. Note that if grafts or replacement refs exist in the Git repository, metadata will not be stripped.
 
 ### authors
 
