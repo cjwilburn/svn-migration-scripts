@@ -43,7 +43,7 @@ The other tests it performs are:
 
 We do not support running conversions with `git-svn` on a case-insensitive file-system; they can in some cases lead to corrupted conversions.
 
-> TODO: How can you tell that corruption has occurred? How can this be avoided e.g. instructions for creating/mounting a case-sensitive disk image on OS X.
+> TODO: How can you tell that corruption has occurred?
 
 ##### Example
 
@@ -52,6 +52,41 @@ We do not support running conversions with `git-svn` on a case-insensitive file-
     Subversion: using version 1.6.18
     git-svn: using version 1.7.9.6
     You appear to be running on a case-insensitive file-system. This is unsupported, and can result in data loss.
+    $
+
+### mount-disk-image (OS X only)
+
+This command, only available on OS X, allows you to easily create and mount a case-sensitive disk image at some path. This is designed to allow you to work around the problems with case-insensitive file-systems mentioned above (the default OS X file-system, HFS+, is case-insensitive).
+
+The command is run as follows:
+
+    $ java -jar svn-migration-scripts.jar mount-disk-image <size in GB> <path for disk image> <path at which to mount disk image>
+
+The size parameter must be specified in integral gigabytes.
+
+##### Example
+
+This example demonstrates first that it is being run on a case-insensitive file system (touching both `path/foo` and `path/FOO` results in only a single file being created), then mounts a 2 GB disk image at `path` and demonstrates that within the disk image, a case-sensitive file system exists. It also demonstrates that the disk image can be subsequently unattached from the file system via the `umount(1)` command.
+
+    $ ls
+    $ mkdir path
+    $ touch path/foo path/FOO
+    $ ls path
+    foo
+    $ rm -rf path
+    $ java -jar svn-migration-scripts.jar mount-disk-image 2 image path
+    created: /Users/huw/Source/svn-migration-scripts/target/image.sparseimage
+    /dev/disk1          	GUID_partition_scheme
+    /dev/disk1s1        	Apple_HFS                      	/Users/huw/Source/svn-migration-scripts/target/path
+    $ ls
+    image.sparseimage
+    path
+    $ touch path/foo path/FOO
+    $ ls path
+    Foo foo
+    $ umount path
+    $ ls
+    image.sparseimage
     $
 
 ### clean-git
