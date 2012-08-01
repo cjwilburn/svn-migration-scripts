@@ -30,7 +30,7 @@ object BitbucketPush extends Command {
       case ex: StatusCode => return Left(ex.contents)
     }).headOption.toRight("Creation was successful but response lacked slug.")
 
-  def existing(http: Http, api: Request, name: String, owner: String): Either[String, String] =
+  def existing(http: Http, api: Request, name: String, owner: String): Option[String] =
     http(api / "user" / "repositories" ># { json =>
       for {
         JArray(body) <- json
@@ -39,16 +39,19 @@ object BitbucketPush extends Command {
         JField("name", JString(repoName)) <- repo
         JField("slug", JString(slug)) <- repo if repoOwner == owner && repoName == name
       } yield slug
-    }).headOption.toRight("Repository does not exist.")
+    }).headOption
 
-  def push(username: String, password: String, owner: String, slug: String): Either[String, Unit] = {
+  def repoSlug(http: Http, api: Request, name: String, owner: String): Either[String, String] =
+    existing(http, api, name, owner).toRight("non-extant").left.flatMap(error => create(http, api, name, owner))
+
+  def push(username: String, password: String, owner: String, slug: String): Either[String, String] = {
     import Request.{encode_% => e}
     import sys.process._
     val remote = "https://%s:%s@bitbucket.org/%s/%s".format(e(username), e(password), owner, slug)
     val process =
       ("git remote show bitbucket" #|| Seq("git", "remote", "add", "bitbucket", remote)) #&&
       ("git push --all bitbucket" #&& "git push --tags bitbucket")
-    if (process.! == 0) Right(()) else Left("Pushing the repository to Bitbucket failed.")
+    Either.cond(process.! == 0, "Successfully pushed to Bitbucket.", "Pushing the repository to Bitbucket failed.")
   }
 
   def apply(options: Array[String], arguments: Array[String]): Boolean = {
@@ -58,12 +61,11 @@ object BitbucketPush extends Command {
     val api = :/("api.bitbucket.org").secure.as_!(username, password) / "1.0"
 
     (for {
-      _ <- existing(http, api, name, owner).left
-      slug <- create(http, api, name, owner).right
+      slug <- repoSlug(http, api, name, owner).right
       result <- push(username, password, owner, slug).right
     } yield result).fold(
-      error => { println("An error occurred while pushing to Bitbucket: " + error); true },
-      unit => { println("Successfully pushed to Bitbucket."); false }
+      error => { println("ERROR: " + error); true },
+      message => { println(message); false }
     )
   }
 }
