@@ -39,8 +39,8 @@ object Verify extends Command {
 
   case class Dependency(name: String, required: String, invocation: String*)
 
-  def parse(arguments: Array[String]) = Right((Array[String](), Array[String]()))
-  
+  def parse(arguments: Array[String]) = Right(Array(), Array())
+
   def apply(options: Array[String], arguments: Array[String]) = {
     var anyError = false
     Array(
