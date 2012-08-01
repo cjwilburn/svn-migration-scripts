@@ -36,7 +36,12 @@ This command will perform some simple tests to ensure that your system has the r
 * Git
 * `git-svn`
 
-It also tests whether you're running the command on a case-insensitive file-system. We do not support running conversions with `git-svn` on a case-insensitive file-system; they can in some cases lead to corrupted conversions.
+The other tests it performs are:
+
+* whether it is possible to directly connect to the internet, and
+* whether you're running the command on a case-insensitive file-system.
+
+We do not support running conversions with `git-svn` on a case-insensitive file-system; they can in some cases lead to corrupted conversions.
 
 > TODO: How can you tell that corruption has occurred? How can this be avoided e.g. instructions for creating/mounting a case-sensitive disk image on OS X.
 
