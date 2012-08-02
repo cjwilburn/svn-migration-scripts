@@ -1,3 +1,5 @@
+package com.atlassian.svn2git
+
 object Clean extends Command {
   case class Options(shouldCreate: Boolean, shouldDelete: Boolean, stripMetadata: Boolean)
 

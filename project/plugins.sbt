@@ -7,3 +7,5 @@ addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.3")
 addSbtPlugin("org.ensime" % "ensime-sbt-cmd" % "0.0.10")
 
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.0.0")
+
+libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-proguard-plugin" % (v+"-0.1.1"))

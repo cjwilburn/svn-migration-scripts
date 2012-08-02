@@ -1,3 +1,5 @@
+package com.atlassian.svn2git
+
 import java.io.File
 import java.net.URLDecoder
 import sys.process._

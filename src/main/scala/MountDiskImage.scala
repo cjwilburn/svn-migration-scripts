@@ -1,3 +1,5 @@
+package com.atlassian.svn2git
+
 object MountDiskImage extends Command {
   val name = "mount-disk-image"
   override val usage = Some("<size-in-gb> <disk-image-file> <mount-point>")

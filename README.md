@@ -6,9 +6,9 @@ To build the JAR, you need a JDK and [SBT][]. You can [download a JDK][] from Or
 
 Once you've installed Java & SBT, you can create the JAR by running (from the root of the project):
 
-    $ sbt assembly
+    $ sbt proguard
 
-This will create the JAR file under the `target/` directory.
+This will create the JAR file under the `target/scala-2.9.1` directory.
 
 ## Running the scripts
 

@@ -1,3 +1,6 @@
+package com.atlassian.svn2git
+
+
 import sys.process._
 
 object Authors extends Command {
