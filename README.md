@@ -8,7 +8,7 @@ Once you've installed Java & SBT, you can create the JAR by running (from the ro
 
     $ sbt proguard
 
-This will create the JAR file under the `target/scala-2.9.1` directory.
+This will create the JAR file under the `target/scala-2.9.1` directory. The generated JAR is called `svn-migration-scripts_2.9.1-0.1.min.jar`; in the examples below we assume that it has been copied to the path `svn-migration-scripts.jar` in the current directory.
 
 ## Running the scripts
 
