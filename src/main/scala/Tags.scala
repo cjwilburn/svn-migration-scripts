@@ -104,4 +104,6 @@ object Tags {
         if (options.shouldDelete) Seq("git", "tag", "-d", t) !
     }
   }
+
+  def $(s: String*): String = s.!!.stripLineEnd
 }
