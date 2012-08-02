@@ -1,3 +1,4 @@
+import com.atlassian.svn2git.Git
 import java.net.URLEncoder
 import org.junit.Test
 import org.junit.Assert._
