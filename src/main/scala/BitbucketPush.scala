@@ -8,10 +8,11 @@ object BitbucketPush extends Command {
   val help = "Push to a repository on Bitbucket, optionally creating it."
   override val usage = Some("<username> <password> [<owner>] <repository-name>")
 
-  def parse(arguments: Array[String]) = {
+  def parse(args: Array[String]) = {
+    val (options, arguments) = args.partition(_ == "--ssh")
     arguments match {
-      case Array(user, pass, owner, name) => Right(Array(), arguments)
-      case Array(user, pass, name) => Right(Array(), Array(user, pass, user, name))
+      case Array(user, pass, owner, name) => Right(options, arguments)
+      case Array(user, pass, name) => Right(options, Array(user, pass, user, name))
       case _ => Left("Invalid arguments")
     }
   }
