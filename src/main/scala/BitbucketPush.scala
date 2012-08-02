@@ -48,9 +48,9 @@ object BitbucketPush extends Command {
     existing(http, api, name, owner).toRight("non-extant").left.flatMap(error => create(http, api, name, owner))
   }
 
-  def ensureRemote(remoteUrl: String): Either[String, String] =
-    Either.cond("git remote show bitbucket" #|| Seq("git", "remote", "add", "bitbucket", remoteUrl) ! ProcessLogger(s => ()) == 0,
-      "bitbucket", "Error creating Git remote: " + remoteUrl)
+  def ensureRemote(remoteName: String, remoteUrl: String): Either[String, String] =
+    Either.cond(Seq("git", "remote", "show", remoteName) #|| Seq("git", "remote", "add", remoteName, remoteUrl) ! ProcessLogger(s => ()) == 0,
+      remoteName, "Error creating Git remote: " + remoteUrl)
 
   def push(remote: String): Either[String, String] =
     Either.cond((Seq("git", "push", "--all", remote) #&& Seq("git", "push", "--tags", remote)).! == 0,
@@ -62,7 +62,12 @@ object BitbucketPush extends Command {
 
     (for {
       slug <- repoSlug(:/("api.bitbucket.org").secure.as_!(username, password) / "1.0", name, owner).right
-      remote <- ensureRemote("https://%s:%s@bitbucket.org/%s/%s".format(e(username), e(password), owner, slug)).right
+      remote <- {
+        if (options.contains("--ssh"))
+          ensureRemote("bitbucket-ssh", "git@bitbucket.org:%s/%s".format(owner, slug))
+        else
+          ensureRemote("bitbucket", "https://%s:%s@bitbucket.org/%s/%s".format(e(username), e(password), owner, slug))
+      }.right
       result <- push(remote).right
     } yield result).fold(
       error => { println("ERROR: " + error); true },
