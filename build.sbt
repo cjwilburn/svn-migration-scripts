@@ -14,4 +14,12 @@ mainClass in (Compile, run) := Some("com.atlassian.svn2git.Main")
 
 mainClass in (Compile, packageBin) <<= mainClass in (Compile, run)
 
-net.virtualvoid.sbt.graph.Plugin.graphSettings
+makeInJarFilter <<= (makeInJarFilter) {
+  (makeInJarFilter) => {
+    (file) => file match {
+      case "httpcore-4.1.4.jar" => makeInJarFilter(file) + ",!META-INF/NOTICE*,!META-INF/LICENSE*"
+      case "httpclient-4.1.3.jar" => makeInJarFilter(file) + ",!META-INF/NOTICE*,!META-INF/LICENSE*"
+      case _ => makeInJarFilter(file)
+    }
+  }
+}
