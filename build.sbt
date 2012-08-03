@@ -5,7 +5,7 @@ name := "svn-migration-scripts"
 version := "0.1"
 
 libraryDependencies ++= Seq(
-  "junit" % "junit" % "4.10" % "test",
+  "org.scalatest" %% "scalatest" % "1.8" % "test",
   "net.databinder" %% "dispatch-http" % "0.8.8",
   "org.scalesxml" %% "scales-xml" % "0.3.1"
 )

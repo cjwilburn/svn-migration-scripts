@@ -1,9 +1,9 @@
-import com.atlassian.svn2git.Git
-import java.net.URLEncoder
-import org.junit.Test
-import org.junit.Assert._
+package com.atlassian.svn2git
 
-class GitTest {
+import java.net.URLEncoder
+import org.scalatest.FunSuite
+
+class GitTest extends FunSuite {
 
   // tests determined using http://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
   val testcases = Map (
@@ -27,11 +27,10 @@ class GitTest {
     "branch[test" -> "branch-test"
   )
 
-  @Test
-  def testCleanRef() {
+  test("testCleanRef") {
     for ((input, expected) <- testcases) {
-      assertEquals("Input: " + input, expected, Git.cleanRef(input))
-      assertEquals("Input: " + input, expected, Git.cleanRef(URLEncoder.encode(input, "UTF-8")))
+      assert(expected === Git.cleanRef(input), "Input: " + input)
+      assert(expected === Git.cleanRef(URLEncoder.encode(input, "UTF-8")), "Input: " + input)
     }
   }
 
