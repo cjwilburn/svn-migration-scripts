@@ -1,5 +1,3 @@
-package com.atlassian.svn2git
-
 import java.net.URLEncoder
 import org.scalatest.FunSuite
 
