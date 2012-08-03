@@ -13,3 +13,5 @@ fork in run := true // We use sys.exit
 mainClass in (Compile, run) := Some("com.atlassian.svn2git.Main")
 
 mainClass in (Compile, packageBin) <<= mainClass in (Compile, run)
+
+net.virtualvoid.sbt.graph.Plugin.graphSettings
