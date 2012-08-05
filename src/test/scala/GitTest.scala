@@ -1,7 +1,7 @@
 import java.net.URLEncoder
-import org.scalatest.FunSuite
+import org.specs2.mutable
 
-class GitTest extends FunSuite {
+class GitTest extends mutable.Specification {
 
   // tests determined using http://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
   val testcases = Map (
@@ -25,10 +25,10 @@ class GitTest extends FunSuite {
     "branch[test" -> "branch-test"
   )
 
-  test("testCleanRef") {
+  "testCleanRef" >> {
     for ((input, expected) <- testcases) {
-      assert(expected === Git.cleanRef(input), "Input: " + input)
-      assert(expected === Git.cleanRef(URLEncoder.encode(input, "UTF-8")), "Input: " + input)
+      expected must equalTo(Git.cleanRef(input))
+      expected must equalTo(Git.cleanRef(URLEncoder.encode(input, "UTF-8")))
     }
   }
 

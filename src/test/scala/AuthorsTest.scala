@@ -1,19 +1,19 @@
 import java.io.ByteArrayInputStream
-import org.scalatest.FunSuite
+import org.specs2.mutable
 
-class AuthorsTest extends FunSuite {
+class AuthorsTest extends mutable.Specification {
 
   def parseUserXml(xml: String, expected: String*) = {
     val authors = collection.mutable.Set[String]()
     Authors.parseUserXml(authors)(new ByteArrayInputStream(xml.getBytes));
-    assert(authors === expected.toSet)
+    authors must equalTo (expected.toSet)
   }
 
-  test("parseUserXmlSingle") {
+  "parseUserXmlSingle" >> {
     parseUserXml("""<log><logentry><author>a</author></logentry></log>""", "a")
   }
 
-  test("parseUserXmlMulti") {
+  "parseUserXmlMulti" >> {
     parseUserXml("""<log><logentry><author>a</author><author>b</author></logentry></log>""", "a", "b")
   }
 }
