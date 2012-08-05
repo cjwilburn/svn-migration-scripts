@@ -21,10 +21,11 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   }
 
   def apply(options: Array[String], arguments: Array[String]) = {
-    onDemandBaseUrl(arguments.head) match {
+    val authors = onDemandBaseUrl(arguments.head) match {
       case Some(host) => processOnDemand(host +: arguments.tail)
       case None => process(arguments)
     }
+    authors.foreach(println)
     false
   }
 
@@ -34,9 +35,9 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   // process/processOnDemand call generateList with two parameters. The first is a ProcessBuilder instance that will
   // call Subversion with the correct arguments to invoke the log command. The second is a function that takes a
   // Subversion username and returns an Option[(full name, e-mail address)].
-  private def generateList(svnProcessBuilder: ProcessBuilder, detailsForUser: String => Option[(String, String)]) {
+  private def generateList(svnProcessBuilder: ProcessBuilder, detailsForUser: String => Option[(String, String)]) = {
     val usernames = fetchList(svnProcessBuilder)
-    (usernames, usernames.par.map(detailsForUser).seq).zipped.map(formatUser).sortWith(user_<).foreach(println)
+    (usernames, usernames.par.map(detailsForUser).seq).zipped.map(formatUser).sortWith(user_<)
   }
 
   private def svnCommandLine(url: String, credentials: Option[(String, String)]): ProcessBuilder =
