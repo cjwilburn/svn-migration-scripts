@@ -4,9 +4,8 @@ import org.specs2.mutable
 class AuthorsTest extends mutable.Specification {
 
   def parseUserXml(xml: String, expected: String*) = {
-    val authors = collection.mutable.Set[String]()
-    Authors.parseUserXml(authors)(new ByteArrayInputStream(xml.getBytes));
-    authors must equalTo (expected.toSet)
+    val authors = Authors.parseUserXml(new ByteArrayInputStream(xml.getBytes))
+    authors.toSet must equalTo (expected.toSet)
   }
 
   "parseUserXmlSingle" >> {
