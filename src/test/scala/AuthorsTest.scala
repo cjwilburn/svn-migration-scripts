@@ -15,4 +15,8 @@ class AuthorsTest extends mutable.Specification {
   "parseUserXmlMulti" >> {
     parseUserXml("""<log><logentry><author>a</author><author>b</author></logentry></log>""", "a", "b")
   }
+
+  "parseUserXmlMultiDupes" >> {
+    parseUserXml("""<log><logentry><author>a</author><author>b</author><author>a</author></logentry></log>""", "a", "b")
+  }
 }

@@ -75,7 +75,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   }
 
   private def fetchList(builder: ProcessBuilder) = {
-    var authors = Iterator[String]()
+    var authors = Set[String]()
     val proc = builder.run(BasicIO.standard(false) withOutput { in =>
       authors = parseUserXml(in)
     })
@@ -91,7 +91,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     import scales.xml._
     import ScalesXml._
     val iterator = iterate(List("log"l, "logentry"l, "author"l), pullXml(is))
-    iterator.map(path => path.children.collect { case Text(t) => t }.foldLeft(new StringBuilder)(_ append _).toString)
+    iterator.map(path => path.children.collect { case Text(t) => t }.foldLeft(new StringBuilder)(_ append _).toString).toSet
   }
 
   private def formatUser(username: String, details: Option[(String, String)]) =
