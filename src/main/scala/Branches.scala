@@ -9,7 +9,7 @@ object Branches {
   def createLocal()(implicit options: Clean.Options) {
     println("# Creating local branches...")
 
-    Seq("git", "for-each-ref", "--format=%(refname)", "refs/remotes/").lines
+    forEachRefFull("refs/remotes/").lines
       .filterNot(_ startsWith "refs/remotes/tags")
       .foreach {
         branch_ref =>
@@ -32,8 +32,7 @@ object Branches {
     val svnBranches = Svn.findItems(urls)
     // Map of (branch as it appears in Subversion -> branch as it appears in Git).
     // e.g. ("my branch" -> "my%20branch")
-    val gitBranches = Seq("git", "for-each-ref", "refs/heads", "--format=%(refname)").lines
-      .map(_.stripPrefix("refs/heads/")).filterNot(_ == "master").map(branch => decodeRef(branch) -> branch).toMap
+    val gitBranches = forEachRef("refs/heads/").filterNot(_ == "master").map(branch => decodeRef(branch) -> branch).toMap
 
     // Remove branches deleted in Subversion.
     val excessBranches = gitBranches -- svnBranches
@@ -57,8 +56,7 @@ object Branches {
     println("# Cleaning branch names")
 
     // list Git branches that needs fixing
-    Seq("git", "for-each-ref", "refs/heads", "--format=%(refname)").lines
-      .map(_ stripPrefix "refs/heads/")
+    forEachRef("refs/heads/")
       .filter(r => decodeRef(r) != r)
       .foreach { r =>
         if (options.shouldDelete) {

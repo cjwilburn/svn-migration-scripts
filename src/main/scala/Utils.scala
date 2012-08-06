@@ -40,4 +40,9 @@ object Git {
   }
 
   def dir: File = new File(sys.env.getOrElse("GIT_DIR", ".git"))
+
+  def forEachRefFull(pattern: String) = Seq("git", "for-each-ref", pattern, "--format=%(refname)").lines
+
+  def forEachRef(pattern: String) = forEachRefFull(pattern).map(_ stripPrefix pattern)
+
 }
