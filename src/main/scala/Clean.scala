@@ -1,6 +1,7 @@
 package com.atlassian.svn2git
 
 import sys.process._
+import java.io.File
 
 object Clean extends Command {
   case class Options(shouldCreate: Boolean, shouldDelete: Boolean, stripMetadata: Boolean)
@@ -29,8 +30,8 @@ object Clean extends Command {
     stripMetadata()
   }
 
-  def getSVNRoots() = {
-    def getConfig(s: String) = "git config svn-remote.%s.%s".format("svn", s).!!.trim
+  def getSVNRoots(cwd: File = new File(".")) = {
+    def getConfig(s: String) = Process("git config svn-remote.%s.%s".format("svn", s), cwd).!!.trim
     val url = getConfig("url")
     def splitRefSpec(s: String) = s.split(",").map(_.split("\\:")(0).replace("*", ""))
     def getRefSpec(s: String) = splitRefSpec(getConfig(s)).map(safeURLAppend(url, _))
