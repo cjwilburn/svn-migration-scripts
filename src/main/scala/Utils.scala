@@ -4,6 +4,10 @@ import java.io.File
 import java.net.URLDecoder
 import sys.process._
 
+object `package` {
+  def $(s: String*): String = s.!!.stripLineEnd
+}
+
 object Svn {
 
   def findItems(svnUrls: Array[String]): Array[String] = {

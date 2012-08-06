@@ -103,5 +103,4 @@ object Tags {
     }
   }
 
-  def $(s: String*): String = s.!!.stripLineEnd
 }
