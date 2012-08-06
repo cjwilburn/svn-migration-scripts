@@ -31,7 +31,7 @@ object MountDiskImage extends Command {
     val size = arguments(0) + "g"
     val imagePath = arguments(1) + ".sparseimage" // Append suffix to stop wrong image type being created
     val mountPath = arguments(2)
-    (Seq("hdiutil", "create", "-size", size, imagePath, "-type", "SPARSE", "-fs", "HFS+", "-fsargs", "-s") #&&
+    (Seq("hdiutil", "create", "-size", size, imagePath, "-type", "SPARSE", "-fs", "HFS+", "-fsargs", "-s", "-volname", "svn-git-migration") #&&
       Seq("hdiutil", "attach", imagePath, "-mountpoint", mountPath)).! != 0
   }
 }
