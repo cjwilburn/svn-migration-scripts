@@ -6,6 +6,7 @@ import sys.process._
 
 object `package` {
   def $(s: String*): String = s.!!.stripLineEnd
+  def safeURLAppend(a: String, b: String) = a.stripSuffix("/") + "/" + b.stripPrefix("/")
 }
 
 object Svn {
