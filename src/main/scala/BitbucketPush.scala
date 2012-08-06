@@ -1,3 +1,5 @@
+package com.atlassian.svn2git
+
 import dispatch._
 import dispatch.liftjson.Js._
 import net.liftweb.json._

@@ -1,3 +1,5 @@
+package com.atlassian.svn2git
+
 import Git._
 import sys.process._
 

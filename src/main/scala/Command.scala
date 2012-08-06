@@ -1,3 +1,5 @@
+package com.atlassian.svn2git
+
 trait Command {
   val name: String
   val usage: Option[String] = None

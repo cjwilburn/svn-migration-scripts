@@ -1,3 +1,5 @@
+package com.atlassian.svn2git
+
 import java.io.ByteArrayInputStream
 import org.specs2.mutable
 

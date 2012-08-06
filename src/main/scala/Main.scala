@@ -1,3 +1,5 @@
+package com.atlassian.svn2git
+
 import scala.Array
 
 object Main extends App {

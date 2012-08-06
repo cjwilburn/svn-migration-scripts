@@ -1,3 +1,5 @@
+package com.atlassian.svn2git
+
 import Git._
 import sys.process._
 
@@ -100,4 +102,6 @@ object Tags {
         if (options.shouldDelete) Seq("git", "tag", "-d", t) !
     }
   }
+
+  def $(s: String*): String = s.!!.stripLineEnd
 }

@@ -6,9 +6,9 @@ To build the JAR, you need a JDK and [SBT][]. You can [download a JDK][] from Or
 
 Once you've installed Java & SBT, you can create the JAR by running (from the root of the project):
 
-    $ sbt assembly
+    $ sbt proguard
 
-This will create the JAR file under the `target/` directory.
+This will create the JAR file under the `target/scala-2.9.1` directory. The generated JAR is called `svn-migration-scripts_2.9.1-0.1.min.jar`; in the examples below we assume that it has been copied to the path `svn-migration-scripts.jar` in the current directory.
 
 ## Running the scripts
 
