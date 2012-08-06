@@ -9,7 +9,7 @@ object Branches {
   def createLocal()(implicit options: Clean.Options) {
     println("# Creating local branches...")
 
-    forEachRefFull("refs/remotes/").lines
+    forEachRefFull("refs/remotes/")
       .filterNot(_ startsWith "refs/remotes/tags")
       .foreach {
         branch_ref =>
