@@ -5,7 +5,7 @@ import java.io.File
 
 class UtilsTest extends mutable.Specification {
 
-  val dir = new File(".")
+  val dir = new File(".").getCanonicalFile
 
   "getRootGitDir" >> {
 

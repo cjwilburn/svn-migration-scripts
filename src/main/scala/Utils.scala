@@ -48,17 +48,12 @@ object Git {
 
   def forEachRef(pattern: String) = forEachRefFull(pattern).map(_ stripPrefix pattern)
 
-  // Yuck, use unfold
   def getRootGitDir(startDir: File = new File(".")) = {
-    def check(f: File) = {
-      val gitDir = new File(f, ".git")
-      gitDir.exists() && gitDir.isDirectory
+    try {
+      Some(new File(Process("git rev-parse --show-toplevel", startDir).!!.trim))
+    } catch {
+      case _ => None
     }
-    var dir = startDir
-    while (!check(dir) && dir.getParentFile != null) {
-      dir = dir.getParentFile
-    }
-    if (check(dir)) Some(dir) else None
   }
 
   def ensureRootGitDirExists() = {
