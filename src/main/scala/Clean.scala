@@ -13,6 +13,7 @@ object Clean extends Command {
   }
 
   def apply(options: Array[String], arguments: Array[String]): Boolean = {
+    Git.ensureRootGitDirExists()
     val svnRoots = Set("branches", "tags").map { r => (r, arguments.map { u => { u stripSuffix "/"} + '/' + r})}.toMap
     val dryRun = options.contains("--dry-run")
     implicit val opts = Options(!dryRun, !(dryRun || options.contains("--no-delete")), options.contains("--strip-metadata"))

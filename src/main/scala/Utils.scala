@@ -47,4 +47,23 @@ object Git {
 
   def forEachRef(pattern: String) = forEachRefFull(pattern).map(_ stripPrefix pattern)
 
+  // Yuck, use unfold
+  def getRootGitDir(startDir: File = new File(".")) = {
+    def check(f: File) = {
+      val gitDir = new File(f, ".git")
+      gitDir.exists() && gitDir.isDirectory
+    }
+    var dir = startDir
+    while (!check(dir) && dir.getParentFile != null) {
+      dir = dir.getParentFile
+    }
+    if (check(dir)) Some(dir) else None
+  }
+
+  def ensureRootGitDirExists() = {
+    if (getRootGitDir().isEmpty) {
+      System.err.println("Command must be run from within a Git repository")
+      sys.exit(1)
+    }
+  }
 }
