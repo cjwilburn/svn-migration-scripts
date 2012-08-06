@@ -26,3 +26,5 @@ makeInJarFilter <<= (makeInJarFilter) {
     }
   }
 }
+
+packageOptions in (Compile, packageBin) += Package.ManifestAttributes( "Git-Version" -> ("git rev-parse HEAD"!!).trim )
