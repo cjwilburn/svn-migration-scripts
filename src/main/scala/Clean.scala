@@ -19,6 +19,13 @@ object Clean extends Command {
     val (branches, tags) = getSVNRoots()
     val force = options.contains("--force")
     implicit val opts = Options(force, force && !options.contains("--no-delete"), options.contains("--strip-metadata"))
+    if (!force) {
+      println(
+        """###########################################################
+          |#                  This is a dry run                      #
+          |#         No changes will be made to your repository      #
+          |###########################################################""".stripMargin)
+    }
 
     Tags.annotate()
     Branches.createLocal()
