@@ -24,7 +24,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
 
   def apply(options: Array[String], arguments: Array[String]) = {
     val authors = onDemandBaseUrl(arguments.head) match {
-      case Some(host) => processOnDemand(host +: arguments.tail)
+      case Some(host) => processOnDemand(host, arguments)
       case None => process(arguments)
     }
     authors.foreach(println)
@@ -55,14 +55,14 @@ jane.doe = Jane Doe <jane.d@example.org>"""
       case Array(host) => svnCommandLine(host, None)
     }, (username: String) => Some((username, username + "@mycompany.com")))
 
-  private def processOnDemand(args: Array[String]) = {
+  private def processOnDemand(host: String, args: Array[String]) = {
     import dispatch._
     import dispatch.liftjson.Js._
     import net.liftweb.json._
-    val Array(host, username, password) = args
+    val Array(url, username, password) = args
     val root = :/(host).secure / "rest" / "api" / "latest" as_! (username, password)
     val executor = new Http with thread.Safety with NoLogging
-    generateList(svnCommandLine("https://" + host + "/svn", Some((username, password))),
+    generateList(svnCommandLine(url, Some((username, password))),
       (username: String) => try {
         executor(root / "user" <<? Map("username" -> username) ># { json =>
           (for {
