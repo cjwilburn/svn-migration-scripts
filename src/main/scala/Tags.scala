@@ -45,8 +45,8 @@ object Tags {
         }
 
         // Create an annotated tag based on the last commit in the tag
+        println("Creating annotated tag '%s' at %s.".format(tag, target_ref))
         if (options.shouldCreate) {
-          println("Creating annotated tag '%s' at %s.".format(tag, target_ref))
           Seq("git", "show", "-s", "--pretty=format:%s%n%n%b", tag_ref) #|
           Process(Seq("git", "tag", "-f", "-a", "-F", "-", tag, target_ref), None,
               "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", tag_ref),
@@ -67,10 +67,12 @@ object Tags {
 
     // Remove tags deleted in Subversion.
     val excessTags = gitTags -- svnTags
-    if (excessTags.nonEmpty && options.shouldDelete) {
+    if (excessTags.nonEmpty) {
       excessTags.values.foreach { tag =>
         println("Deleting Git tag '%s' not in Subversion.".format(tag))
-        Seq("git", "tag", "-d", tag) !
+        if (options.shouldDelete) {
+          Seq("git", "tag", "-d", tag) !
+        }
       }
     } else {
       println("No obsolete tags to remove.")
@@ -91,8 +93,8 @@ object Tags {
       .filter(t => decodeRef(t) != t)
       .foreach { t =>
         val c = t concat "^{commit}" // commit the tag is referring to
+        println("Replacing tag '%s' with '%s' at %s.".format(t, cleanRef(t), c))
         if (options.shouldCreate) {
-          println("Replacing tag '%s' with '%s' at %s.".format(t, cleanRef(t), c))
           Seq("git", "show", "-s", "--pretty=format:%s%n%n%b", c) #|
             Process(Seq("git", "tag", "-a", "-F", "-", cleanRef(t), c), None,
                     "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", c),

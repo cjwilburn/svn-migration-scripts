@@ -7,7 +7,7 @@ object Clean extends Command {
   case class Options(shouldCreate: Boolean, shouldDelete: Boolean, stripMetadata: Boolean)
 
   val name = "clean-git"
-  override val usage = Some("[--dry-run] [--no-delete] [--strip-metadata] ...")
+  override val usage = Some("[--force] [--no-delete] [--strip-metadata] ...")
   val help = "Cleans conversion artefacts from a converted Subversion repository."
 
   def parse(arguments: Array[String]) = {
@@ -17,8 +17,8 @@ object Clean extends Command {
   def apply(options: Array[String], arguments: Array[String]): Boolean = {
     Git.ensureRootGitDirExists()
     val (branches, tags) = getSVNRoots()
-    val dryRun = options.contains("--dry-run")
-    implicit val opts = Options(!dryRun, !(dryRun || options.contains("--no-delete")), options.contains("--strip-metadata"))
+    val force = options.contains("--force")
+    implicit val opts = Options(force, force && !options.contains("--no-delete"), options.contains("--strip-metadata"))
 
     Tags.annotate()
     Branches.createLocal()
@@ -50,8 +50,8 @@ object Clean extends Command {
         println("ERROR: Metadata not stripped: replacement refs exist.")
         true
       } else {
+        println("# removing Subversion metadata from Git commit messages")
         if (options.shouldDelete) {
-          println("# removing Subversion metadata from Git commit messages")
           Seq("git", "filter-branch", "--msg-filter", "sed -e '/^git-svn-id:/d'").!
         }
         false

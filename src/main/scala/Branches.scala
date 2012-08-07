@@ -20,9 +20,11 @@ object Branches {
 
           // create a local branch ref only if it's not trunk (which is already mapped to master)
           // and if it is not an intermediate branch (ex: foo@42)
-          if (branch != "trunk" && !isIntermediateRef(branch) && options.shouldCreate) {
+          if (branch != "trunk" && !isIntermediateRef(branch)) {
             println("Creating the local branch '%s' for Subversion branch '%s'.".format(branch, branch_ref))
-            Seq("git", "branch", "-f", "-t", branch, branch_ref) !
+            if (options.shouldCreate) {
+              Seq("git", "branch", "-f", "-t", branch, branch_ref) !
+            }
           }
       }
   }
@@ -38,10 +40,12 @@ object Branches {
 
     // Remove branches deleted in Subversion.
     val excessBranches = gitBranches -- svnBranches
-    if (excessBranches.nonEmpty && options.shouldDelete) {
+    if (excessBranches.nonEmpty) {
       excessBranches.values.foreach { branch =>
         println("Deleting Git branch '%s' not in Subversion.".format(branch))
-        Seq("git", "branch", "-D", branch) !
+        if (options.shouldDelete) {
+          Seq("git", "branch", "-D", branch) !
+        }
       }
     } else {
       println("No obsolete branches to remove.")
@@ -61,8 +65,8 @@ object Branches {
     forEachRef("refs/heads/")
       .filter(r => decodeRef(r) != r)
       .foreach { r =>
+        println("Replacing branch '%s' with '%s'.".format(r, cleanRef(r)))
         if (options.shouldDelete) {
-          println("Replacing branch '%s' with '%s'.".format(r, cleanRef(r)))
           Seq("git", "branch", "-m", r, cleanRef(r)) !
         }
       }
