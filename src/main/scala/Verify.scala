@@ -2,6 +2,7 @@ package com.atlassian.svn2git
 
 import java.io.{File, IOException}
 import sys.process._
+import org.apache.commons.io.FileUtils
 
 object Verify extends Command {
   val name = "verify"
@@ -78,7 +79,7 @@ object Verify extends Command {
     val dir = new File(System.getProperty("java.io.tmpdir"), java.util.UUID.randomUUID().toString)
     Process("git init " + dir.getCanonicalPath).!
     val result = callback(dir)
-    ("rm -rf " + dir.getCanonicalPath).!
+    FileUtils.deleteDirectory(dir)
     result
   }
 
