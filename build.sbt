@@ -29,6 +29,8 @@ makeInJarFilter <<= (makeInJarFilter) {
   }
 }
 
+minJarPath <<= artifact { a => file("target") / (a.name + "." + a.extension) asFile }
+
 packageOptions in (Compile, packageBin) += Package.ManifestAttributes( "Git-Version" -> ("git rev-parse HEAD"!!).trim )
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
