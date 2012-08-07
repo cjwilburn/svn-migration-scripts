@@ -31,7 +31,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     false
   }
 
-  private def onDemandBaseUrl(url: String) =
+  def onDemandBaseUrl(url: String) =
     """(?:https?://)?([^/]+\.(?:jira\.com|jira-dev\.com|atlassian\.net))(?:.*?)""".r.findFirstMatchIn(url).map(_.group(1))
 
   // process/processOnDemand call generateList with two parameters. The first is a ProcessBuilder instance that will

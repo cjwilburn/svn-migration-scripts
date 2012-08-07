@@ -21,4 +21,12 @@ class AuthorsTest extends mutable.Specification {
   "parseUserXmlMultiDupes" >> {
     parseUserXml("""<log><logentry><author>a</author><author>b</author><author>a</author></logentry></log>""", "a", "b")
   }
+
+  "onDemandBaseUrl" >> {
+    Authors.onDemandBaseUrl("https://chocs.jira-dev.com/svn/CMN/foo") must equalTo(Some("chocs.jira-dev.com"))
+  }
+
+  "not onDemandBaseUrl" >> {
+    Authors.onDemandBaseUrl("https://chocs.abc.com/svn/CMN/foo") must equalTo(None)
+  }
 }
