@@ -23,6 +23,7 @@ makeInJarFilter <<= (makeInJarFilter) {
     (file) => file match {
       case "httpcore-4.1.4.jar" => makeInJarFilter(file) + ",!META-INF/NOTICE*,!META-INF/LICENSE*"
       case "httpclient-4.1.3.jar" => makeInJarFilter(file) + ",!META-INF/NOTICE*,!META-INF/LICENSE*"
+      case "commons-io-2.3.jar" => makeInJarFilter(file) + ",!META-INF/NOTICE*,!META-INF/LICENSE*"
       case _ => makeInJarFilter(file)
     }
   }
