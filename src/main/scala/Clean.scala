@@ -29,8 +29,15 @@ object Clean extends Command {
 
     Tags.annotate()
     Branches.createLocal()
-    Tags.checkObsolete(tags)
-    Branches.checkObsolete(branches)
+    def checkObsolete(a: Array[String], f: Array[String] => Unit) = {
+      if (a.find(_.contains("*")).isEmpty) {
+        f(a)
+      } else {
+        println("WARNING: Non-standard SVN branch/tag configuration, could not clean.")
+      }
+    }
+    checkObsolete(tags, Tags.checkObsolete)
+    checkObsolete(branches, Branches.checkObsolete)
     Tags.fixNames()
     Branches.fixNames()
 

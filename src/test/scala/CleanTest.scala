@@ -15,11 +15,11 @@ class CleanTest extends mutable.Specification {
             |	url = https://a/b
             |	fetch = trunk:refs/remotes/trunk
             |	branches = branches/*:refs/remotes/*
-            |	branches = branches2/*:refs/remotes/*
+            |	branches = branches2/*/3:refs/remotes/*
             |	tags = tags/*:refs/remotes/tags/*
           """.stripMargin)
         val (branches, tags) = Clean.getSVNRoots(dir)
-        branches must equalTo(Array("https://a/b/branches/", "https://a/b/branches2/"))
+        branches must equalTo(Array("https://a/b/branches/", "https://a/b/branches2/*/3"))
         tags must equalTo(Array("https://a/b/tags/"))
     }
   }
