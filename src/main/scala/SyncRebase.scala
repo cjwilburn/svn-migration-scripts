@@ -18,6 +18,6 @@ object SyncRebase extends Command {
         if (List("git", "rebase", remote, branch).! != 0)
           throw sys.error("error rebasing %s onto %s".format(branch, remote))
     }
-    true
+    false
   }
 }
