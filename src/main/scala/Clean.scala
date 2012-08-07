@@ -31,9 +31,9 @@ object Clean extends Command {
   }
 
   def getSVNRoots(cwd: File = new File(".")) = {
-    def getConfig(s: String) = Process("git config svn-remote.%s.%s".format("svn", s), cwd).!!.trim
-    val url = getConfig("url")
-    def splitRefSpec(s: String) = s.split(",").map(_.split("\\:")(0).replace("*", ""))
+    def getConfig(s: String) = Process("git config --get-all svn-remote.%s.%s".format("svn", s), cwd).lines
+    val url = getConfig("url").headOption.getOrElse("")
+    def splitRefSpec(s: Stream[String]) = s.map(_.split("\\:")(0).replaceAll("\\*$", "")).toArray
     def getRefSpec(s: String) = splitRefSpec(getConfig(s)).map(safeURLAppend(url, _))
     (getRefSpec("branches"), getRefSpec("tags"))
   }
