@@ -79,7 +79,9 @@ object Verify extends Command {
     val dir = new File(System.getProperty("java.io.tmpdir"), java.util.UUID.randomUUID().toString)
     Process("git init -q " + dir.getCanonicalPath).!
     val result = callback(dir)
-    FileUtils.deleteDirectory(dir)
+    if (!FileUtils.deleteQuietly(dir)) {
+      FileUtils.forceDeleteOnExit(dir)
+    }
     result
   }
 
