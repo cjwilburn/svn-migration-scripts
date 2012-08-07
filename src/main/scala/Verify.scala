@@ -77,7 +77,7 @@ object Verify extends Command {
 
   def withTempGitDir[T](callback: File => T) = {
     val dir = new File(System.getProperty("java.io.tmpdir"), java.util.UUID.randomUUID().toString)
-    Process("git init " + dir.getCanonicalPath).!
+    Process("git init -q " + dir.getCanonicalPath).!
     val result = callback(dir)
     FileUtils.deleteDirectory(dir)
     result
