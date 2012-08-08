@@ -29,4 +29,16 @@ class AuthorsTest extends mutable.Specification {
   "not onDemandBaseUrl" >> {
     Authors.onDemandBaseUrl("https://chocs.abc.com/svn/CMN/foo") must equalTo(None)
   }
+
+  import net.liftweb.json
+
+  "test valid parseOnDemandJson" >> {
+    Authors.parseOnDemandJson(json.parse(
+      """{"displayName": "a", "emailAddress": "b"}"""
+    )) must equalTo(Some("a", "b"))
+  }
+
+  "test invalid parseOnDemandJson" >> {
+    Authors.parseOnDemandJson(json.parse("{}")) must equalTo(None)
+  }
 }

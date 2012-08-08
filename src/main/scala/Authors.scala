@@ -58,22 +58,24 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   private def processOnDemand(host: String, args: Array[String]) = {
     import dispatch._
     import dispatch.liftjson.Js._
-    import net.liftweb.json._
     val Array(url, username, password) = args
     val root = :/(host).secure / "rest" / "api" / "latest" as_! (username, password)
     val executor = new Http with thread.Safety with NoLogging
     generateList(svnCommandLine(url, Some((username, password))),
       (username: String) => try {
-        executor(root / "user" <<? Map("username" -> username) ># { json =>
-          (for {
-            JObject(body) <- json
-            JField("displayName", JString(name)) <- body
-            JField("emailAddress", JString(email)) <- body
-          } yield (name.trim, email.trim)).headOption
-        })
+        executor(root / "user" <<? Map("username" -> username) ># parseOnDemandJson)
       } catch {
         case ex: StatusCode => None
       })
+  }
+
+  import net.liftweb.json._
+  def parseOnDemandJson(json: JValue) = {
+    (for {
+      JObject(body) <- json
+      JField("displayName", JString(name)) <- body
+      JField("emailAddress", JString(email)) <- body
+    } yield (name.trim, email.trim)).headOption
   }
 
   private def fetchList(builder: ProcessBuilder) = {
