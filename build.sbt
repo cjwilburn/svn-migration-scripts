@@ -16,7 +16,7 @@ mainClass in (Compile, run) := Some("com.atlassian.svn2git.Main")
 
 mainClass in (Compile, packageBin) <<= mainClass in (Compile, run)
 
-testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "console", "junitxml")
+testOptions += Tests.Argument(TestFrameworks.Specs2, "console", "junitxml")
 
 makeInJarFilter <<= (makeInJarFilter) {
   (makeInJarFilter) => {
