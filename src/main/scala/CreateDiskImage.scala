@@ -37,15 +37,16 @@ object CreateDiskImage extends Command {
     val mountPath = /(homeDir, imageName)
     run((Seq("hdiutil", "create", "-size", size, imagePath, "-type", "SPARSE", "-fs", "HFS+", "-fsargs", "-s", "-volname", imageName) #&&
          Seq("hdiutil", "attach", imagePath, "-mountpoint", mountPath)),
-        "The disk image was created successfully and mounted as: " + mountPath)
+        "The disk image was created successfully and mounted as: " + mountPath,
+        "The disk image could not be created. Check if an image already exists at " + imagePath)
   }
 
-  def /(d: String, f: String) = {
-    new File(d, f).getAbsolutePath
-  }
+  def /(d: String, f: String) = new File(d, f).getAbsolutePath
 
-  def run(p: ProcessBuilder, m : String) = {
-    Some(p.!).filter(_ == 0).map{ c => println(m); c }.isDefined
+  def run(p: ProcessBuilder, success : String, failure : String) = {
+    val r = p.! == 0
+    println(if (r) success; else failure)
+    r
   }
 
 }
