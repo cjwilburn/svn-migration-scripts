@@ -34,3 +34,5 @@ minJarPath <<= artifact { a => file("target") / (a.name + "." + a.extension) asF
 packageOptions in (Compile, packageBin) += Package.ManifestAttributes( "Git-Version" -> ("git rev-parse HEAD"!!).trim )
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+seq(ScctPlugin.instrumentSettings : _*)
