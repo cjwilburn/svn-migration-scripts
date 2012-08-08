@@ -16,27 +16,26 @@ class VerifyTest extends mutable.Specification with ScalaCheck {
   "lt major/minor" >> lt("1.1", "1.2.4")
   "lt major" >> lt("1.0", "2.1")
 
-  val version = Gen.listOf1(Gen.choose(1, Integer.MAX_VALUE))
+  // Generates two lists of ints, the second always greater than the first
+  def versions(max: Int) = for {
+    list <- Gen.listOf1(Gen.choose(1, max))
+    num <- Gen.choose(0, list.length - 1)
+    list2 <- Gen.listOf(Gen.choose(1, max))
+    val (h, t) = list.splitAt(num)
+    greater <- Gen.choose(t.headOption.getOrElse(0) + 1, max)
+  } yield (list, h ++ (greater :: list2))
 
   def dot(l: List[Int]) = l.mkString(".")
 
-  def lessThan(a: List[Int], b: List[Int]) = a.zip(b).map {
-    case (x, y) => x compareTo y
-  }.dropWhile(_ == 0).headOption.map(_ < 0).getOrElse(true)
-
-  "test lessThan" >> {
-    lessThan(List(1, 2, 3), List(1, 3, 2)) must beTrue
-    lessThan(List(1, 3, 2), List(1, 2, 3)) must beFalse
-    lessThan(List(1, 4), List(1, 3, 4)) must beFalse
-    lessThan(List(1, 4), List(1, 4, 4)) must beTrue
-  }
-
   "lt property check" >> {
-    forAll(version, version) {
-      (a: List[Int], b: List[Int]) =>
-        val (x, y) = if (lessThan(a, b)) (a, b) else (b, a)
-        lt(dot(x), dot(y))
+    forAll(versions(Integer.MAX_VALUE)) {
+      case (a: List[Int], b: List[Int]) => lt(dot(a), dot(b))
     }
   }
 
+  "lt property check small" >> {
+    forAll(versions(9)) {
+      case (a: List[Int], b: List[Int]) => lt(dot(a), dot(b))
+    }
+  }
 }
