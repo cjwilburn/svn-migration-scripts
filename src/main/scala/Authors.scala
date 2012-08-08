@@ -22,7 +22,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
       Right(Array(), if (arguments.length == 2) arguments :+ readLine("password? ") else arguments)
   }
 
-  def apply(options: Array[String], arguments: Array[String]) = {
+  def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {
     val authors = onDemandBaseUrl(arguments.head) match {
       case Some(host) => processOnDemand(host, arguments)
       case None => process(arguments)

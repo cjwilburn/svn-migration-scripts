@@ -18,7 +18,7 @@ class CleanTest extends mutable.Specification {
             |	branches = branches2/*/3:refs/remotes/*
             |	tags = tags/*:refs/remotes/tags/*
           """.stripMargin)
-        val (branches, tags) = Clean.getSVNRoots(dir)
+        val (branches, tags) = Clean.getSVNRoots(new Cmd(dir))
         branches must equalTo(Array("https://a/b/branches/", "https://a/b/branches2/*/3"))
         tags must equalTo(Array("https://a/b/tags/"))
     }

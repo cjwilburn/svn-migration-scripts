@@ -9,7 +9,8 @@ object Main extends App {
     val name = "help"
     val help = "Help"
     def parse(arguments: Array[String]) = Right(Array(), Array())
-    def apply(opts: Array[String], arguments: Array[String]) = {
+    def apply(cmd: Cmd, opts: Array[String], arguments: Array[String]) = {
+      import cmd.println
       println("Unrecognised or missing command")
       println("Available commands:")
       commands.sortBy(_.name).map("- " + _.name).foreach(println)
@@ -31,7 +32,7 @@ object Main extends App {
         println(error)
         command.usage.map(u => println(command.name + " usage: [--help] " + u))
       },
-      (parsed) => if (command(parsed._1, parsed._2)) sys.exit(1)
+      (parsed) => if (command(new Cmd(), parsed._1, parsed._2)) sys.exit(1)
     )
   }
 }

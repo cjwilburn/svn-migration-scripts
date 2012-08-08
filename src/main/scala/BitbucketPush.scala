@@ -3,7 +3,7 @@ package com.atlassian.svn2git
 import dispatch._
 import dispatch.liftjson.Js._
 import net.liftweb.json._
-import sys.process._
+import sys.process.ProcessLogger
 
 object BitbucketPush extends Command {
   val name = "bitbucket-push"
@@ -50,27 +50,28 @@ object BitbucketPush extends Command {
     existing(http, api, name, owner).toRight("non-extant").left.flatMap(error => create(http, api, name, owner))
   }
 
-  def ensureRemote(remoteName: String, remoteUrl: String): Either[String, String] =
-    Either.cond(Seq("git", "remote", "show", remoteName) #|| Seq("git", "remote", "add", remoteName, remoteUrl) ! ProcessLogger(s => ()) == 0,
+  def ensureRemote(git: Git, remoteName: String, remoteUrl: String): Either[String, String] =
+    Either.cond(git("git", "remote", "show", remoteName) #|| git("git", "remote", "add", remoteName, remoteUrl) ! ProcessLogger(s => ()) == 0,
       remoteName, "Error creating Git remote: " + remoteUrl)
 
-  def push(remote: String): Either[String, String] =
-    Either.cond((Seq("git", "push", "--all", remote) #&& Seq("git", "push", "--tags", remote)).! == 0,
+  def push(git: Git, remote: String): Either[String, String] =
+    Either.cond((git("git", "push", "--all", remote) #&& git("git", "push", "--tags", remote)).! == 0,
       "Successfully pushed to Bitbucket", "Pushing repository to Bitbucket failed.")
 
-  def apply(options: Array[String], arguments: Array[String]): Boolean = {
+  def apply(cmd: Cmd, options: Array[String], arguments: Array[String]): Boolean = {
     import Request.{encode_% => e}
+    import cmd.git
     val Array(username, password, owner, name) = arguments
 
     (for {
       slug <- repoSlug(:/("api.bitbucket.org").secure.as_!(username, password) / "1.0", name, owner).right
       remote <- {
         if (options.contains("--ssh"))
-          ensureRemote("bitbucket-ssh", "git@bitbucket.org:%s/%s".format(owner, slug))
+          ensureRemote(git, "bitbucket-ssh", "git@bitbucket.org:%s/%s".format(owner, slug))
         else
-          ensureRemote("bitbucket", "https://%s:%s@bitbucket.org/%s/%s".format(e(username), e(password), owner, slug))
+          ensureRemote(git, "bitbucket", "https://%s:%s@bitbucket.org/%s/%s".format(e(username), e(password), owner, slug))
       }.right
-      result <- push(remote).right
+      result <- push(git, remote).right
     } yield result).fold(
       error => { println("ERROR: " + error); true },
       message => { println(message); false }

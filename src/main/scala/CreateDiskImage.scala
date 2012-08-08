@@ -30,7 +30,7 @@ object CreateDiskImage extends Command {
       case _ => Left("Invalid arguments")
     }
 
-  def apply(options: Array[String], arguments: Array[String]) = {
+  def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {
     val size = arguments(0) + "g"
     val imageName = arguments(1)
     val imagePath = /(homeDir, imageName + ".sparseimage") // Append suffix to stop wrong image type being created

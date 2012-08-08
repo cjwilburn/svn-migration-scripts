@@ -28,9 +28,10 @@ class GitTest extends mutable.Specification {
   )
 
   "testCleanRef" >> {
+    val git = new Git(new java.io.File("."))
     for ((input, expected) <- testcases) {
-      expected must equalTo(Git.cleanRef(input))
-      expected must equalTo(Git.cleanRef(URLEncoder.encode(input, "UTF-8")))
+      expected must equalTo(git.cleanRef(input))
+      expected must equalTo(git.cleanRef(URLEncoder.encode(input, "UTF-8")))
     }
   }
 

@@ -1,17 +1,15 @@
 package com.atlassian.svn2git
 
-import Git._
-import sys.process._
-
 object Branches {
 
   /**
    * Create local branches out of svn branches.
    */
-  def createLocal()(implicit options: Clean.Options) {
+  def createLocal(cmd: Cmd)(implicit options: Clean.Options) {
+    import cmd._
     println("# Creating local branches...")
 
-    forEachRefFull("refs/remotes/")
+    git.forEachRefFull("refs/remotes/")
       .filterNot(_ startsWith "refs/remotes/tags")
       .foreach {
         branch_ref =>
@@ -20,23 +18,24 @@ object Branches {
 
           // create a local branch ref only if it's not trunk (which is already mapped to master)
           // and if it is not an intermediate branch (ex: foo@42)
-          if (branch != "trunk" && !isIntermediateRef(branch)) {
+          if (branch != "trunk" && !git.isIntermediateRef(branch)) {
             println("Creating the local branch '%s' for Subversion branch '%s'.".format(branch, branch_ref))
             if (options.shouldCreate) {
-              Seq("git", "branch", "-f", "-t", branch, branch_ref) !
+              git("git", "branch", "-f", "-t", branch, branch_ref) !
             }
           }
       }
   }
 
   // Reconcile branches between Git/Subversion.
-  def checkObsolete(urls: Array[String])(implicit options: Clean.Options) {
+  def checkObsolete(cmd: Cmd)(urls: Array[String])(implicit options: Clean.Options) {
+    import cmd._
     println("# Checking for obsolete branches...")
 
-    val svnBranches = Svn.findItems(urls)
+    val svnBranches = svn.findItems(urls)
     // Map of (branch as it appears in Subversion -> branch as it appears in Git).
     // e.g. ("my branch" -> "my%20branch")
-    val gitBranches = forEachRef("refs/heads/").filterNot(_ == "master").map(branch => decodeRef(branch) -> branch).toMap
+    val gitBranches = git.forEachRef("refs/heads/").filterNot(_ == "master").map(branch => git.decodeRef(branch) -> branch).toMap
 
     // Remove branches deleted in Subversion.
     val excessBranches = gitBranches -- svnBranches
@@ -44,7 +43,7 @@ object Branches {
       excessBranches.values.foreach { branch =>
         println("Deleting Git branch '%s' not in Subversion.".format(branch))
         if (options.shouldDelete) {
-          Seq("git", "branch", "-D", branch) !
+          git("git", "branch", "-D", branch) !
         }
       }
     } else {
@@ -58,16 +57,17 @@ object Branches {
   /**
    * Fix branch names after conversion.
    */
-  def fixNames()(implicit options: Clean.Options) {
+  def fixNames(cmd: Cmd)(implicit options: Clean.Options) {
+    import cmd._
     println("# Cleaning branch names")
 
     // list Git branches that needs fixing
-    forEachRef("refs/heads/")
-      .filter(r => decodeRef(r) != r)
+    git.forEachRef("refs/heads/")
+      .filter(r => git.decodeRef(r) != r)
       .foreach { r =>
-        println("Replacing branch '%s' with '%s'.".format(r, cleanRef(r)))
+        println("Replacing branch '%s' with '%s'.".format(r, git.cleanRef(r)))
         if (options.shouldDelete) {
-          Seq("git", "branch", "-m", r, cleanRef(r)) !
+          git("git", "branch", "-m", r, git.cleanRef(r)) !
         }
       }
   }

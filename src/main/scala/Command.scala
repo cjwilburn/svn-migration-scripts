@@ -7,5 +7,5 @@ trait Command {
   val available: Boolean = true
 
   def parse(arguments: Array[String]): Either[String, (Array[String], Array[String])]
-  def apply(options: Array[String], arguments: Array[String]): Boolean
+  def apply(cmd: Cmd, options: Array[String], arguments: Array[String]): Boolean
 }

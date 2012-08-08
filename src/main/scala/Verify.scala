@@ -85,7 +85,7 @@ object Verify extends Command {
     result
   }
 
-  def apply(options: Array[String], arguments: Array[String]) = {
+  def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {
     var anyError = false
     withTempGitDir { dir =>
     Array(

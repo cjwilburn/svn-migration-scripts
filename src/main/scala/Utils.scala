@@ -5,11 +5,10 @@ import java.net.URLDecoder
 import sys.process._
 
 object `package` {
-  def $(s: String*): String = s.!!.stripLineEnd
   def safeURLAppend(a: String, b: String) = a.stripSuffix("/") + "/" + b.stripPrefix("/")
 }
 
-object Svn {
+class Svn {
 
   def findItems(svnUrls: Array[String]): Array[String] = {
     val strippedUrls = svnUrls.map(_ stripSuffix "/")
@@ -22,7 +21,7 @@ object Svn {
 
 }
 
-object Git {
+class Git(cwd: File) {
   def isIntermediateRef(ref: String) = {
     "^.+@\\d+$".r.findAllIn(ref).hasNext
   }
@@ -44,13 +43,13 @@ object Git {
 
   def dir: File = new File(sys.env.getOrElse("GIT_DIR", ".git"))
 
-  def forEachRefFull(pattern: String) = Seq("git", "for-each-ref", pattern, "--format=%(refname)").lines
+  def forEachRefFull(pattern: String) = this("git", "for-each-ref", pattern, "--format=%(refname)").lines
 
   def forEachRef(pattern: String) = forEachRefFull(pattern).map(_ stripPrefix pattern)
 
-  def getRootGitDir(startDir: File = new File(".")) = {
+  def getRootGitDir() = {
     try {
-      Some(new File(Process("git rev-parse --show-toplevel", startDir).!!.trim))
+      Some(new File($("git", "rev-parse", "--show-toplevel")))
     } catch {
       case _ => None
     }
@@ -62,4 +61,19 @@ object Git {
       sys.exit(1)
     }
   }
+
+  def $(s: String*): String = this(s: _*).!!.stripLineEnd
+
+  def apply(cmd: String) = Process(cmd, cwd)
+
+  def apply(cmd: String*) = Process(cmd, cwd)
+
+  def apply(cmd: Seq[String], extraEnv: (String, String)*) = Process(cmd, cwd, extraEnv: _*)
+
+}
+
+class Cmd(cwd: File = new File(".")) {
+  val git: Git = new Git(cwd)
+  val svn: Svn = new Svn
+  def println(s: Any) = Console.println(s)
 }

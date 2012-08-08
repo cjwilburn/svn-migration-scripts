@@ -1,8 +1,5 @@
 package com.atlassian.svn2git
 
-import sys.process._
-import java.io.File
-
 object Clean extends Command {
   case class Options(shouldCreate: Boolean, shouldDelete: Boolean, stripMetadata: Boolean)
 
@@ -14,9 +11,10 @@ object Clean extends Command {
     Right(arguments.partition(_ startsWith "-"))
   }
 
-  def apply(options: Array[String], arguments: Array[String]): Boolean = {
-    Git.ensureRootGitDirExists()
-    val (branches, tags) = getSVNRoots()
+  def apply(cmd: Cmd, options: Array[String], arguments: Array[String]): Boolean = {
+    import cmd._
+    git.ensureRootGitDirExists()
+    val (branches, tags) = getSVNRoots(cmd)
     val force = options.contains("--force")
     implicit val opts = Options(force, force && !options.contains("--no-delete"), options.contains("--strip-metadata"))
     if (!force) {
@@ -27,8 +25,8 @@ object Clean extends Command {
           |###########################################################""".stripMargin)
     }
 
-    Tags.annotate()
-    Branches.createLocal()
+    Tags.annotate(cmd)
+    Branches.createLocal(cmd)
     def checkObsolete(a: Array[String], f: Array[String] => Unit) = {
       if (a.find(_.contains("*")).isEmpty) {
         f(a)
@@ -36,37 +34,37 @@ object Clean extends Command {
         println("WARNING: Non-standard SVN branch/tag configuration, could not clean.")
       }
     }
-    checkObsolete(tags, Tags.checkObsolete)
-    checkObsolete(branches, Branches.checkObsolete)
-    Tags.fixNames()
-    Branches.fixNames()
+    checkObsolete(tags, Tags.checkObsolete(cmd))
+    checkObsolete(branches, Branches.checkObsolete(cmd))
+    Tags.fixNames(cmd)
+    Branches.fixNames(cmd)
 
-    stripMetadata()
+    stripMetadata(cmd)
   }
 
-  def getSVNRoots(cwd: File = new File(".")) = {
-    def getConfig(s: String) = Process("git config --get-all svn-remote.%s.%s".format("svn", s), cwd).lines
+  def getSVNRoots(cmd: Cmd) = {
+    def getConfig(s: String) = cmd.git("git config --get-all svn-remote.%s.%s".format("svn", s)).lines
     val url = getConfig("url").headOption.getOrElse("")
     def splitRefSpec(s: Stream[String]) = s.map(_.split("\\:")(0).replaceAll("\\*$", "")).toArray
     def getRefSpec(s: String) = splitRefSpec(getConfig(s)).map(safeURLAppend(url, _))
     (getRefSpec("branches"), getRefSpec("tags"))
   }
 
-  def stripMetadata()(implicit options: Clean.Options) = {
+  def stripMetadata(cmd: Cmd)(implicit options: Clean.Options) = {
     import java.io.File
-    import sys.process._
+    import cmd._
 
     if (options.stripMetadata) {
-      if ((Git.dir /: Seq("info", "grafts"))(new File(_, _)).exists) {
+      if ((git.dir /: Seq("info", "grafts"))(new File(_, _)).exists) {
         println("ERROR: Metadata not stripped: grafts exist.")
         true
-      } else if (Option((Git.dir /: Seq("refs", "replace"))(new File(_, _)).listFiles).getOrElse(Array()).nonEmpty) {
+      } else if (Option((git.dir /: Seq("refs", "replace"))(new File(_, _)).listFiles).getOrElse(Array()).nonEmpty) {
         println("ERROR: Metadata not stripped: replacement refs exist.")
         true
       } else {
         println("# removing Subversion metadata from Git commit messages")
         if (options.shouldDelete) {
-          Seq("git", "filter-branch", "--msg-filter", "sed -e '/^git-svn-id:/d'").!
+          git("git", "filter-branch", "--msg-filter", "sed -e '/^git-svn-id:/d'").!
         }
         false
       }

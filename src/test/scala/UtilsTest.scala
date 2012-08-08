@@ -10,13 +10,13 @@ class UtilsTest extends mutable.Specification {
   "getRootGitDir" >> {
 
     "same directory" >> {
-      Git.getRootGitDir(dir) must equalTo(Some(dir))
+      new Git(dir).getRootGitDir() must equalTo(Some(dir))
     }
     "up one directory" >> {
-      Git.getRootGitDir(new File(dir, "src")) must equalTo(Some(dir))
+      new Git(new File(dir, "src")).getRootGitDir() must equalTo(Some(dir))
     }
     "not found" >> {
-      Git.getRootGitDir(new File("/tmp")) must equalTo(None)
+      new Git(new File("/tmp")).getRootGitDir() must equalTo(None)
     }
   }
 
