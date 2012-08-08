@@ -3,7 +3,7 @@ package com.atlassian.svn2git
 import scala.Array
 
 object Main extends App {
-  val commands = Array(Authors, Clean, Verify, BitbucketPush, SyncRebase, MountDiskImage).filter(_.available)
+  val commands = Array(Authors, Clean, Verify, BitbucketPush, SyncRebase, CreateDiskImage).filter(_.available)
 
   object Help extends Command {
     val name = "help"
