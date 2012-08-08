@@ -53,9 +53,9 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     generateList(args match {
       case Array(host, username, password) => svnCommandLine(host, Some((username, password)))
       case Array(host) => svnCommandLine(host, None)
-    }) {
-      username => Some((username, username + "@mycompany.com"))
-    }
+    })(processUsername)
+
+  def processUsername(username: String) = Some((username, username + "@mycompany.com"))
 
   private def processOnDemand(host: String, args: Array[String]) = {
     import dispatch._
