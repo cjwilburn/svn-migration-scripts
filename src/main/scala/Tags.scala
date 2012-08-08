@@ -25,10 +25,7 @@ object Tags {
         val tree = $("git", "rev-parse", tag_ref)
 
         // Find the oldest ancestor for which the tree is the same.
-        var parent_ref = tag_ref
-        while ($("git", "rev-parse", "--quiet", "--verify", parent_ref + "^:") == tree) {
-          parent_ref = parent_ref + "^"
-        }
+        val parent_ref = findOldestAncestor(git, tree, tag_ref)
 
         // If this ancestor is in trunk then we can just tag it, otherwise the tag has diverged from trunk
         // and it's actually more like a branch than a tag.
@@ -54,6 +51,14 @@ object Tags {
               "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", tag_ref)) !;
         }
     }
+  }
+
+  def findOldestAncestor(git: Git, tree: String, tag_ref: String) = {
+    var parent_ref = tag_ref
+    while (git.$("git", "rev-parse", "--quiet", "--verify", parent_ref + "^:") == tree) {
+      parent_ref = parent_ref + "^"
+    }
+    parent_ref
   }
 
   // Reconcile tags between Git/Subversion.
