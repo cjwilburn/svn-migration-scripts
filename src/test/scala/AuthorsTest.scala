@@ -30,6 +30,12 @@ class AuthorsTest extends mutable.Specification {
     Authors.onDemandBaseUrl("https://chocs.abc.com/svn/CMN/foo") must equalTo(None)
   }
 
+  "test mapUserDetails" >> {
+    Authors.mapUserDetails(List("b", "c", "a")) {
+      user => if(user != "c") Some(user.toUpperCase, "%s@%s" format(user, "example.com")) else None
+    } must equalTo(List("c", "a = A <a@example.com>", "b = B <b@example.com>"))
+  }
+
   import net.liftweb.json
 
   "test valid parseOnDemandJson" >> {

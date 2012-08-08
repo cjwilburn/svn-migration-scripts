@@ -37,10 +37,10 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   // process/processOnDemand call generateList with two parameters. The first is a ProcessBuilder instance that will
   // call Subversion with the correct arguments to invoke the log command. The second is a function that takes a
   // Subversion username and returns an Option[(full name, e-mail address)].
-  private def generateList(svnProcessBuilder: ProcessBuilder, detailsForUser: String => Option[(String, String)]) = {
-    val usernames = fetchList(svnProcessBuilder)
+  private def generateList(svnProcessBuilder: ProcessBuilder) = mapUserDetails(fetchList(svnProcessBuilder)) _
+
+  def mapUserDetails(usernames: Seq[String])(detailsForUser: String => Option[(String, String)]) =
     (usernames, usernames.par.map(detailsForUser).seq).zipped.map(formatUser).sortWith(user_<)
-  }
 
   private def svnCommandLine(url: String, credentials: Option[(String, String)]): ProcessBuilder =
     List("svn", "log", "--trust-server-cert", "--non-interactive", "--no-auth-cache", "--xml", "-q")
@@ -53,7 +53,9 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     generateList(args match {
       case Array(host, username, password) => svnCommandLine(host, Some((username, password)))
       case Array(host) => svnCommandLine(host, None)
-    }, (username: String) => Some((username, username + "@mycompany.com")))
+    }) {
+      username => Some((username, username + "@mycompany.com"))
+    }
 
   private def processOnDemand(host: String, args: Array[String]) = {
     import dispatch._
@@ -61,12 +63,13 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     val Array(url, username, password) = args
     val root = :/(host).secure / "rest" / "api" / "latest" as_! (username, password)
     val executor = new Http with thread.Safety with NoLogging
-    generateList(svnCommandLine(url, Some((username, password))),
-      (username: String) => try {
+    generateList(svnCommandLine(url, Some((username, password)))) {
+      username => try {
         executor(root / "user" <<? Map("username" -> username) ># parseOnDemandJson)
       } catch {
         case ex: StatusCode => None
-      })
+      }
+    }
   }
 
   import net.liftweb.json._
