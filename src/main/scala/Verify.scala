@@ -78,11 +78,13 @@ object Verify extends Command {
   def withTempGitDir[T](callback: File => T) = {
     val dir = new File(System.getProperty("java.io.tmpdir"), java.util.UUID.randomUUID().toString)
     Process("git init -q " + dir.getCanonicalPath).!
-    val result = callback(dir)
-    if (!FileUtils.deleteQuietly(dir)) {
-      FileUtils.forceDeleteOnExit(dir)
+    try {
+      callback(dir)
+    } finally {
+      if (!FileUtils.deleteQuietly(dir)) {
+        FileUtils.forceDeleteOnExit(dir)
+      }
     }
-    result
   }
 
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {
