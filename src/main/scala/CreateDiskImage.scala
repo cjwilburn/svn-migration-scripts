@@ -43,10 +43,6 @@ object CreateDiskImage extends Command {
 
   def /(d: String, f: String) = new File(d, f).getAbsolutePath
 
-  def run(p: ProcessBuilder, success : String, failure : String) = {
-    val r = p.! == 0
-    println(if (r) success; else failure)
-    r
-  }
+  def run(p: ProcessBuilder, success: String, failure: String) = returning(p.! == 0)(r => println(if (r) success; else failure))
 
 }

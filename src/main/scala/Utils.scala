@@ -6,6 +6,10 @@ import sys.process._
 
 object `package` {
   def safeURLAppend(a: String, b: String) = a.stripSuffix("/") + "/" + b.stripPrefix("/")
+
+  def returning[T](t: T)(f: T => Unit) = {
+    f(t); t
+  }
 }
 
 class Svn {
