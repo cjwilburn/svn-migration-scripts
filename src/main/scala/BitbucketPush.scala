@@ -63,6 +63,18 @@ object BitbucketPush extends Command {
     import cmd.git
     val Array(username, password, owner, name) = arguments
 
+    // ask for an explicit confirmation if the repo is very large
+    git.warnIfLargeRepository({
+      _ =>
+        do {
+          println("Are you sure you want to continue? (Y/N)")
+        } while (readLine().toLowerCase match {
+          case "y" | "yes" => false
+          case "n" | "no"  => sys.exit()
+          case _ => true
+        })
+    })
+
     (for {
       slug <- repoSlug(:/("api.bitbucket.org").secure.as_!(username, password) / "1.0", name, owner).right
       remote <- {

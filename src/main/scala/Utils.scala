@@ -3,6 +3,7 @@ package com.atlassian.svn2git
 import java.io.File
 import java.net.URLDecoder
 import sys.process._
+import org.apache.commons.io.FileUtils
 
 object `package` {
   def safeURLAppend(a: String, b: String) = a.stripSuffix("/") + "/" + b.stripPrefix("/")
@@ -64,6 +65,17 @@ class Git(cwd: File) {
       System.err.println("Command must be run from within a Git repository")
       sys.exit(1)
     }
+  }
+
+  def warnIfLargeRepository(f: Unit => Unit = _ => ()) = {
+    val size = FileUtils.sizeOfDirectory(dir)
+    if (size > (1 << 30)) {
+      println("### Warning: your repository is larger than 1GB (" + size / (1 << 20) + " Mb)")
+      println("### See https://dvcsroute.atlassian.net/wiki/x/XQAQ on how to reduce the size of your repository.")
+      println()
+      f()
+      false
+    } else true
   }
 
   def $(s: String*): String = this(s: _*).!!.stripLineEnd

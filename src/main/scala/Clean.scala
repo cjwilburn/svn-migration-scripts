@@ -1,7 +1,5 @@
 package com.atlassian.svn2git
 
-import org.apache.commons.io.FileUtils
-
 object Clean extends Command {
   case class Options(shouldCreate: Boolean, shouldDelete: Boolean, stripMetadata: Boolean)
 
@@ -16,6 +14,7 @@ object Clean extends Command {
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]): Boolean = {
     import cmd._
     git.ensureRootGitDirExists()
+    git.warnIfLargeRepository()
     val (branches, tags) = getSVNRoots(cmd)
     val force = options.contains("--force")
     implicit val opts = Options(force, force && !options.contains("--no-delete"), options.contains("--strip-metadata"))
@@ -42,7 +41,6 @@ object Clean extends Command {
     Branches.fixNames(cmd)
 
     stripMetadata(cmd)
-    warnIfLargeRepository(cmd)
   }
 
   def getSVNRoots(cmd: Cmd) = {
@@ -74,12 +72,4 @@ object Clean extends Command {
     } else false
   }
 
-  def warnIfLargeRepository(cmd: Cmd) = {
-    val size = FileUtils.sizeOfDirectory(cmd.git.dir)
-    if (size > (1 << 30)) {
-      println("Warning: your repository is larger than 1GB.")
-      println("See https://dvcsroute.atlassian.net/wiki/x/XQAQ on how to reduce the size of your repository.")
-      false
-    } else true
-  }
 }
