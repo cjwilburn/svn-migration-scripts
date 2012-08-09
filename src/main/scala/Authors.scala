@@ -37,10 +37,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   // process/processOnDemand call generateList with two parameters. The first is a ProcessBuilder instance that will
   // call Subversion with the correct arguments to invoke the log command. The second is a function that takes a
   // Subversion username and returns an Option[(full name, e-mail address)].
-  private def generateList(svnProcessBuilder: ProcessBuilder) = mapUserDetails(cleanList(fetchList(svnProcessBuilder))) _
-
-  // clean the list of usernames fetched from Subversion
-  def cleanList(usernames: Seq[String]) = usernames.map(u => if (u.matches(".*@.*\\..*")) u.takeWhile(_ != '@'); else u)
+  private def generateList(svnProcessBuilder: ProcessBuilder) = mapUserDetails(fetchList(svnProcessBuilder)) _
 
   def mapUserDetails(usernames: Seq[String])(detailsForUser: String => Option[(String, String)]) =
     (usernames, usernames.par.map(detailsForUser).seq).zipped.map(formatUser).sortWith(user_<)
@@ -58,7 +55,14 @@ jane.doe = Jane Doe <jane.d@example.org>"""
       case Array(host) => svnCommandLine(host, None)
     })(processUsername)
 
-  def processUsername(username: String) = Some((username, username + "@mycompany.com"))
+  def processUsername(username: String) =
+    if (username.matches(".*@.*\\..*")) {
+      // If the username from Subversion is already an email, remove the domain and capitalise each word to
+      // generate the full name (ex: john.doe@developer.com -> 'John Doe') and use the username as the generated email
+      Some((username.takeWhile(_ != '@').replace('.', ' ').split("\\s").map(capitalise).mkString(" "), username))
+    } else {
+      Some((username, username + "@mycompany.com"))
+    }
 
   private def processOnDemand(host: String, args: Array[String]) = {
     import dispatch._
@@ -109,4 +113,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     details.map(details => "%s = %s <%s>".format(username, details._1, details._2)).getOrElse(username)
 
   private def user_<(l: String, r: String): Boolean = if (l.contains('=')) r.contains('=') && l < r else r.contains('=') || l < r
+
+  private def capitalise(s: String) = if (s.length > 0) s.charAt(0).toUpper + s.drop(1).toLowerCase; else s
+
 }
