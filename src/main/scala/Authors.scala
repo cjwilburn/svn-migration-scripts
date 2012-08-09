@@ -37,7 +37,10 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   // process/processOnDemand call generateList with two parameters. The first is a ProcessBuilder instance that will
   // call Subversion with the correct arguments to invoke the log command. The second is a function that takes a
   // Subversion username and returns an Option[(full name, e-mail address)].
-  private def generateList(svnProcessBuilder: ProcessBuilder) = mapUserDetails(fetchList(svnProcessBuilder)) _
+  private def generateList(svnProcessBuilder: ProcessBuilder) = mapUserDetails(cleanList(fetchList(svnProcessBuilder))) _
+
+  // clean the list of usernames fetched from Subversion
+  def cleanList(usernames: Seq[String]) = usernames.map(u => if (u.matches(".*@.*\\..*")) u.takeWhile(_ != '@'); else u)
 
   def mapUserDetails(usernames: Seq[String])(detailsForUser: String => Option[(String, String)]) =
     (usernames, usernames.par.map(detailsForUser).seq).zipped.map(formatUser).sortWith(user_<)

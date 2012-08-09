@@ -40,6 +40,10 @@ class AuthorsTest extends mutable.Specification {
     Authors.processUsername("a@b.com") must equalTo(Some("a@b.com", "a@b.com@mycompany.com"))
   }
 
+  "test cleanList" >> {
+    Authors.cleanList(Seq("abc", "a@b.com", "a@b@c.com", "@abc", "a@b")) must equalTo(Seq("abc", "a", "a", "@abc", "a@b"))
+  }
+
   import net.liftweb.json
 
   "test valid parseOnDemandJson" >> {
