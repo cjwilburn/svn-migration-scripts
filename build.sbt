@@ -37,3 +37,5 @@ packageOptions in (Compile, packageBin) += Package.ManifestAttributes( "Git-Vers
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 seq(ScctPlugin.instrumentSettings : _*)
+
+scalariformSettings
