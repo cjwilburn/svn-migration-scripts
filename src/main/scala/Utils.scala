@@ -37,12 +37,12 @@ class Git(cwd: File) {
   def cleanRef(ref: String) = {
     // reference: http://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
     decodeRef(ref).filterNot(Character.isISOControl _)
-                  .trim()
-                  .stripSuffix("?")
-                  .stripSuffix(".lock")
-                  .replaceAll("\\.+$", "")
-                  .replaceAll("\\.{2,}", ".")
-                  .replaceAll("""(?:\s+|\@\{|[~^:*?/]+|\[+|\]+)""", "-")
+      .trim()
+      .stripSuffix("?")
+      .stripSuffix(".lock")
+      .replaceAll("\\.+$", "")
+      .replaceAll("\\.{2,}", ".")
+      .replaceAll("""(?:\s+|\@\{|[~^:*?/]+|\[+|\]+)""", "-")
   }
 
   def dir: File = new File(sys.env.getOrElse("GIT_DIR", ".git"))

@@ -36,9 +36,9 @@ object CreateDiskImage extends Command {
     val imagePath = /(homeDir, imageName + ".sparseimage") // Append suffix to stop wrong image type being created
     val mountPath = /(homeDir, imageName)
     run((Seq("hdiutil", "create", "-size", size, imagePath, "-type", "SPARSE", "-fs", "HFS+", "-fsargs", "-s", "-volname", imageName) #&&
-         Seq("hdiutil", "attach", imagePath, "-mountpoint", mountPath)),
-        "The disk image was created successfully and mounted as: " + mountPath,
-        "The disk image could not be created. Check if an image already exists at " + imagePath)
+      Seq("hdiutil", "attach", imagePath, "-mountpoint", mountPath)),
+      "The disk image was created successfully and mounted as: " + mountPath,
+      "The disk image could not be created. Check if an image already exists at " + imagePath)
   }
 
   def /(d: String, f: String) = new File(d, f).getAbsolutePath

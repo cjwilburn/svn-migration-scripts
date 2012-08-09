@@ -64,11 +64,12 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     val root = :/(host).secure / "rest" / "api" / "latest" as_! (username, password)
     val executor = new Http with thread.Safety with NoLogging
     generateList(svnCommandLine(url, Some((username, password)))) {
-      username => try {
-        executor(root / "user" <<? Map("username" -> username) ># parseOnDemandJson)
-      } catch {
-        case ex: StatusCode => None
-      }
+      username =>
+        try {
+          executor(root / "user" <<? Map("username" -> username) ># parseOnDemandJson)
+        } catch {
+          case ex: StatusCode => None
+        }
     }
   }
 

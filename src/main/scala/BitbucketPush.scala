@@ -26,13 +26,13 @@ object BitbucketPush extends Command {
       "owner" -> owner,
       "is_private" -> "True"
     ) ># { json =>
-      for {
-        JObject(body) <- json
-        JField("slug", JString(slug)) <- body
-      } yield slug
-    } >! {
-      case ex: StatusCode => return Left(ex.contents)
-    }).headOption.toRight("Creation was successful but response lacked slug.")
+        for {
+          JObject(body) <- json
+          JField("slug", JString(slug)) <- body
+        } yield slug
+      } >! {
+        case ex: StatusCode => return Left(ex.contents)
+      }).headOption.toRight("Creation was successful but response lacked slug.")
 
   def existing(http: Http, api: Request, name: String, owner: String): Option[String] =
     http(api / "user" / "repositories" ># { json =>
@@ -59,7 +59,7 @@ object BitbucketPush extends Command {
       "Successfully pushed to Bitbucket", "Pushing repository to Bitbucket failed.")
 
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]): Boolean = {
-    import Request.{encode_% => e}
+    import Request.{ encode_% => e }
     import cmd.git
     val Array(username, password, owner, name) = arguments
 

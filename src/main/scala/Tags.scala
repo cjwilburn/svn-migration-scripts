@@ -20,37 +20,37 @@ object Tags {
       .filterNot(git.isIntermediateRef(_))
       .foreach {
 
-      tag_ref =>
-        val tag = tag_ref stripPrefix "refs/remotes/tags/"
-        val tree = $("git", "rev-parse", tag_ref)
+        tag_ref =>
+          val tag = tag_ref stripPrefix "refs/remotes/tags/"
+          val tree = $("git", "rev-parse", tag_ref)
 
-        // Find the oldest ancestor for which the tree is the same.
-        val parent_ref = findOldestAncestor(git, tree, tag_ref)
+          // Find the oldest ancestor for which the tree is the same.
+          val parent_ref = findOldestAncestor(git, tree, tag_ref)
 
-        // If this ancestor is in trunk then we can just tag it, otherwise the tag has diverged from trunk
-        // and it's actually more like a branch than a tag.
-        val target_ref = try {
-          val parent = $("git", "rev-parse", parent_ref)
-          if ($("git", "merge-base", "refs/remotes/trunk", parent) == parent) {
-            parent
-          } else {
-            println("tag has diverged: " + tag)
-            tag_ref
+          // If this ancestor is in trunk then we can just tag it, otherwise the tag has diverged from trunk
+          // and it's actually more like a branch than a tag.
+          val target_ref = try {
+            val parent = $("git", "rev-parse", parent_ref)
+            if ($("git", "merge-base", "refs/remotes/trunk", parent) == parent) {
+              parent
+            } else {
+              println("tag has diverged: " + tag)
+              tag_ref
+            }
+          } catch {
+            case ex: RuntimeException => tag_ref
           }
-        } catch {
-          case ex: RuntimeException => tag_ref
-        }
 
-        // Create an annotated tag based on the last commit in the tag
-        println("Creating annotated tag '%s' at %s.".format(tag, target_ref))
-        if (options.shouldCreate) {
-          git("git", "show", "-s", "--pretty=format:%s%n%n%b", tag_ref) #|
-          git(Seq("git", "tag", "-f", "-a", "-F", "-", tag, target_ref),
-              "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", tag_ref),
-              "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", tag_ref),
-              "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", tag_ref)) !;
-        }
-    }
+          // Create an annotated tag based on the last commit in the tag
+          println("Creating annotated tag '%s' at %s.".format(tag, target_ref))
+          if (options.shouldCreate) {
+            git("git", "show", "-s", "--pretty=format:%s%n%n%b", tag_ref) #|
+              git(Seq("git", "tag", "-f", "-a", "-F", "-", tag, target_ref),
+                "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", tag_ref),
+                "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", tag_ref),
+                "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", tag_ref)) !;
+          }
+      }
   }
 
   def findOldestAncestor(git: Git, tree: String, tag_ref: String) = {
@@ -105,12 +105,12 @@ object Tags {
         if (options.shouldCreate) {
           git("git", "show", "-s", "--pretty=format:%s%n%n%b", c) #|
             git(Seq("git", "tag", "-a", "-F", "-", git.cleanRef(t), c),
-                    "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", c),
-                    "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", c),
-                    "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", c)) !
+              "GIT_COMMITTER_NAME" -> $("git", "show", "-s", "--pretty=format:%an", c),
+              "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", c),
+              "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", c)) !
         }
         if (options.shouldDelete) git("git", "tag", "-d", t) !
-    }
+      }
   }
 
 }

@@ -7,7 +7,7 @@ class AuthorsTest extends mutable.Specification {
 
   def parseUserXml(xml: String, expected: String*) = {
     val authors = Authors.parseUserXml(new ByteArrayInputStream(xml.getBytes))
-    authors.toSet must equalTo (expected.toSet)
+    authors.toSet must equalTo(expected.toSet)
   }
 
   "parseUserXmlSingle" >> {
@@ -32,7 +32,7 @@ class AuthorsTest extends mutable.Specification {
 
   "test mapUserDetails" >> {
     Authors.mapUserDetails(List("b", "c", "a")) {
-      user => if(user != "c") Some(user.toUpperCase, "%s@%s" format(user, "example.com")) else None
+      user => if (user != "c") Some(user.toUpperCase, "%s@%s" format (user, "example.com")) else None
     } must equalTo(List("c", "a = A <a@example.com>", "b = B <b@example.com>"))
   }
 

@@ -6,7 +6,7 @@ import org.specs2.mutable
 class GitTest extends mutable.Specification {
 
   // tests determined using http://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
-  val testcases = Map (
+  val testcases = Map(
     "branch test" -> "branch-test",
     "branch.test" -> "branch.test",
     "branch-test." -> "branch-test",

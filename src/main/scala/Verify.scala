@@ -1,6 +1,6 @@
 package com.atlassian.svn2git
 
-import java.io.{File, IOException}
+import java.io.{ File, IOException }
 import sys.process._
 import org.apache.commons.io.FileUtils
 
@@ -18,7 +18,7 @@ object Verify extends Command {
         case e: NumberFormatException => 0
       }
     }
-  
+
     override def compare(l: String, r: String): Int = {
       val lefts = l.split("[-._]")
       val rights = r.split("[-._]")
@@ -36,7 +36,7 @@ object Verify extends Command {
     (try {
       Process(s :+ "--version", cwd).lines.headOption
     } catch { case e: IOException => None })
-       .flatMap("(?<=version )[^ ]+".r findFirstIn _).toRight("Unable to determine version.")
+      .flatMap("(?<=version )[^ ]+".r findFirstIn _).toRight("Unable to determine version.")
 
   def requireVersion(actual: String, required: String): Either[String, String] =
     if (VersionComparator.lt(actual, required)) Left("Version %s required (found %s).".format(required, actual)) else Right(actual)
@@ -60,7 +60,7 @@ object Verify extends Command {
     }
 
   def checkHttpConnectivity: Boolean = {
-    import java.net.{InetSocketAddress, Proxy, Socket}
+    import java.net.{ InetSocketAddress, Proxy, Socket }
     import java.util.concurrent.TimeUnit._
 
     val socket = new Socket(Proxy.NO_PROXY)
@@ -90,14 +90,14 @@ object Verify extends Command {
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {
     var anyError = false
     withTempGitDir { dir =>
-    Array(
-      Dependency("Git", "1.7.7.5", "git"),
-      Dependency("Subversion", "1.6.17", "svn"),
-      Dependency("git-svn", "1.7.7.5", "git", "svn")
-    ).map(command => findVersion(dir, command.invocation : _*).right.flatMap(requireVersion(_, command.required)).fold(
-      (error) => { anyError = true; println("%s: ERROR: %s".format(command.name, error)) },
-      (version) => println("%s: using version %s".format(command.name, version))
-    ))
+      Array(
+        Dependency("Git", "1.7.7.5", "git"),
+        Dependency("Subversion", "1.6.17", "svn"),
+        Dependency("git-svn", "1.7.7.5", "git", "svn")
+      ).map(command => findVersion(dir, command.invocation: _*).right.flatMap(requireVersion(_, command.required)).fold(
+          (error) => { anyError = true; println("%s: ERROR: %s".format(command.name, error)) },
+          (version) => println("%s: using version %s".format(command.name, version))
+        ))
     }
 
     anyError = anyError || checkCaseSensitivity

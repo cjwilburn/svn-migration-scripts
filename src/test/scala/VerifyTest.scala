@@ -1,6 +1,6 @@
 package com.atlassian.svn2git
 
-import org.specs2.{ScalaCheck, mutable}
+import org.specs2.{ ScalaCheck, mutable }
 import org.scalacheck._
 import org.scalacheck.Prop.forAll
 import com.atlassian.svn2git.Verify.VersionComparator
