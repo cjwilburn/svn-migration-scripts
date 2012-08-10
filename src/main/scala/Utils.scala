@@ -52,6 +52,8 @@ class Git(cwd: File) {
 
   def forEachRef(pattern: String) = forEachRefFull(pattern).map(_ stripPrefix pattern)
 
+  def gc() = this("git", "gc", "--prune=now").lines_!
+
   def getRootGitDir() = {
     try {
       Some(new File($("git", "rev-parse", "--show-toplevel")))
@@ -70,6 +72,7 @@ class Git(cwd: File) {
   def warnIfLargeRepository(f: Unit => Unit = _ => ()) = {
     val size = FileUtils.sizeOfDirectory(dir)
     if (size > (1 << 30)) {
+      println()
       println("### Warning: your repository is larger than 1GB (" + size / (1 << 20) + " Mb)")
       println("### See https://dvcsroute.atlassian.net/wiki/x/XQAQ on how to reduce the size of your repository.")
       println()

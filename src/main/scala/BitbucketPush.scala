@@ -63,7 +63,8 @@ object BitbucketPush extends Command {
     import cmd.git
     val Array(username, password, owner, name) = arguments
 
-    // ask for an explicit confirmation if the repo is very large
+    // gc the repository and ask for an explicit confirmation if it is very large
+    git.gc()
     git.warnIfLargeRepository({
       _ =>
         do {
