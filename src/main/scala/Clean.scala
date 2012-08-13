@@ -14,7 +14,11 @@ object Clean extends Command {
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]): Boolean = {
     import cmd._
     git.ensureRootGitDirExists()
+
+    // get the list of branches and tags in the Subversion side
     val (branches, tags) = getSVNRoots(cmd)
+
+    // read options
     val force = options.contains("--force")
     implicit val opts = Options(force, force && !options.contains("--no-delete"), options.contains("--strip-metadata"))
     if (!force) {
@@ -25,8 +29,13 @@ object Clean extends Command {
           |###########################################################""".stripMargin)
     }
 
+    // create annotated tags for Subversion remote tags
     Tags.annotate(cmd)
+
+    // create local branches for Subversion remote branches
     Branches.createLocal(cmd)
+
+    // delete tags and branches removed in Subversion
     def checkObsolete(a: Array[String], f: Array[String] => Unit) = {
       if (a.find(_.contains("*")).isEmpty) {
         f(a)
@@ -36,10 +45,17 @@ object Clean extends Command {
     }
     checkObsolete(tags, Tags.checkObsolete(cmd))
     checkObsolete(branches, Branches.checkObsolete(cmd))
+
+    // fix branches and tags' names to respect Git constraints
     Tags.fixNames(cmd)
     Branches.fixNames(cmd)
 
+    // strip the git-svn metadata at the end of every commit (if --strip-metadata)
     stripMetadata(cmd)
+
+    // gc the repository and verify its size (if it's too big, warn the user)
+    git.gc()
+    git.warnIfLargeRepository()
   }
 
   def getSVNRoots(cmd: Cmd) = {
@@ -70,4 +86,5 @@ object Clean extends Command {
       }
     } else false
   }
+
 }
