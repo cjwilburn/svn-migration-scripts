@@ -27,7 +27,7 @@ object CreateDiskImage extends Command {
           case ex: NumberFormatException =>
             Left("Invalid size argument '%s'.".format(size))
         }
-      case _ => Left("Invalid arguments")
+      case _ => Left("Invalid or missing arguments: re-run with --help for more info")
     }
 
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {

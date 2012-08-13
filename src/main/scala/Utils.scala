@@ -1,15 +1,32 @@
 package com.atlassian.svn2git
 
-import java.io.File
+import java.io._
 import java.net.URLDecoder
 import sys.process._
-import org.apache.commons.io.FileUtils
+import org.apache.commons.io.{FileUtils, IOUtils}
+import scala.Some
+import scala.Console
 
 object `package` {
   def safeURLAppend(a: String, b: String) = a.stripSuffix("/") + "/" + b.stripPrefix("/")
 
   def returning[T](t: T)(f: T => Unit) = {
     f(t); t
+  }
+
+  def writeExceptionToDisk(t: Throwable) {
+    val f = File.createTempFile("error-script-", ".txt")
+    val s = new PrintWriter(new BufferedWriter(new FileWriter(f)))
+    try {
+      t.printStackTrace(s)
+      println("Error written to " + f.getAbsolutePath)
+    } catch {
+      case e: IOException => System.err.println("Could not write the error to a temp file. Here is the complete stacktrace:")
+                             e.printStackTrace(System.err)
+                             f.deleteOnExit()
+    } finally {
+      IOUtils.closeQuietly(s)
+    }
   }
 }
 
