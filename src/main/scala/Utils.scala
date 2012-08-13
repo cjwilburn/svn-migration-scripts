@@ -4,7 +4,6 @@ import java.io._
 import java.net.URLDecoder
 import sys.process._
 import org.apache.commons.io.{FileUtils, IOUtils}
-import scala.Some
 import scala.Console
 
 object `package` {
