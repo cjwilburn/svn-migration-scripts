@@ -15,7 +15,7 @@ object BitbucketPush extends Command {
     arguments match {
       case Array(user, pass, owner, name) => Right(options, arguments)
       case Array(user, pass, name) => Right(options, Array(user, pass, user, name))
-      case _ => Left("Invalid arguments")
+      case _ => Left("Invalid or missing arguments: re-run with --help for more info")
     }
   }
 
@@ -43,6 +43,11 @@ object BitbucketPush extends Command {
         JField("name", JString(repoName)) <- repo
         JField("slug", JString(slug)) <- repo if repoOwner == owner && repoName == name
       } yield slug
+    } >! {
+      case ex: StatusCode =>
+        System.err.println("Could not verify if the repository exists on Bitbucket: check the username or the password are valid")
+        writeExceptionToDisk(ex)
+        sys.exit(1)
     }).headOption
 
   def repoSlug(api: Request, name: String, owner: String): Either[String, String] = {

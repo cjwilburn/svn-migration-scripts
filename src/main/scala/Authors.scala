@@ -2,6 +2,7 @@ package com.atlassian.svn2git
 
 import java.io.InputStream
 import sys.process._
+import javax.xml.stream.XMLStreamException
 
 object Authors extends Command {
   val name = "authors"
@@ -17,7 +18,8 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   def parse(arguments: Array[String]) = {
     val minimumArguments = arguments.headOption.flatMap(onDemandBaseUrl).map(url => 3).getOrElse(1)
     if (arguments.length < minimumArguments || arguments.length > 3)
-      Left(if (minimumArguments == 3) "Invalid arguments (username and password required for OnDemand)" else "Invalid arguments")
+      Left(if (minimumArguments == 3) "Missing arguments (username and password are required for OnDemand)"
+           else "Invalid or missing arguments: re-run with --help for more info")
     else
       Right(Array(), if (arguments.length == 2) arguments :+ readLine("password? ") else arguments)
   }
@@ -105,8 +107,15 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   def parseUserXml(is: InputStream) = {
     import scales.xml._
     import ScalesXml._
-    val iterator = iterate(List("log"l, "logentry"l, "author"l), pullXml(is))
-    iterator.map(path => path.children.collect { case Text(t) => t }.foldLeft(new StringBuilder)(_ append _).toString).toSet
+    try {
+      val iterator = iterate(List("log"l, "logentry"l, "author"l), pullXml(is))
+      iterator.map(path => path.children.collect { case Text(t) => t }.foldLeft(new StringBuilder)(_ append _).toString).toSet
+    } catch {
+      case ex: XMLStreamException =>
+        System.err.println("Could not communicate with Subversion: check the URL of the repository, the username and the password are all valid")
+        writeExceptionToDisk(ex)
+        sys.exit(1)
+    }
   }
 
   private def formatUser(username: String, details: Option[(String, String)]) =
