@@ -19,7 +19,7 @@ package com.atlassian.svn2git
 import java.io._
 import java.net.URLDecoder
 import sys.process._
-import org.apache.commons.io.{FileUtils, IOUtils}
+import org.apache.commons.io.{ FileUtils, IOUtils }
 import scala.Console
 
 object `package` {
@@ -36,9 +36,10 @@ object `package` {
       t.printStackTrace(s)
       println("Error written to " + f.getAbsolutePath)
     } catch {
-      case e: IOException => System.err.println("Could not write the error to a temp file. Here is the complete stacktrace:")
-                             e.printStackTrace(System.err)
-                             f.deleteOnExit()
+      case e: IOException =>
+        System.err.println("Could not write the error to a temp file. Here is the complete stacktrace:")
+        e.printStackTrace(System.err)
+        f.deleteOnExit()
     } finally {
       IOUtils.closeQuietly(s)
     }

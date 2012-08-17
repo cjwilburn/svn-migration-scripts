@@ -35,7 +35,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     val minimumArguments = arguments.headOption.flatMap(onDemandBaseUrl).map(url => 3).getOrElse(1)
     if (arguments.length < minimumArguments || arguments.length > 3)
       Left(if (minimumArguments == 3) "Missing arguments (username and password are required for OnDemand)"
-           else "Invalid or missing arguments: re-run with --help for more info")
+      else "Invalid or missing arguments: re-run with --help for more info")
     else
       Right(Array(), if (arguments.length == 2) arguments :+ readLine("password? ") else arguments)
   }

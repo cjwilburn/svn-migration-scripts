@@ -92,7 +92,7 @@ object BitbucketPush extends Command {
           println("Are you sure you want to continue? (Y/N)")
         } while (readLine().toLowerCase match {
           case "y" | "yes" => false
-          case "n" | "no"  => sys.exit()
+          case "n" | "no" => sys.exit()
           case _ => true
         })
     })
