@@ -1,3 +1,19 @@
+/**
+ * Copyright 2012 Atlassian
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package com.atlassian.svn2git
 
 import java.io.InputStream
@@ -19,7 +35,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     val minimumArguments = arguments.headOption.flatMap(onDemandBaseUrl).map(url => 3).getOrElse(1)
     if (arguments.length < minimumArguments || arguments.length > 3)
       Left(if (minimumArguments == 3) "Missing arguments (username and password are required for OnDemand)"
-           else "Invalid or missing arguments: re-run with --help for more info")
+      else "Invalid or missing arguments: re-run with --help for more info")
     else
       Right(Array(), if (arguments.length == 2) arguments :+ readLine("password? ") else arguments)
   }
