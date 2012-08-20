@@ -75,7 +75,16 @@ object Clean extends Command {
   }
 
   def getSVNRoots(cmd: Cmd) = {
-    def getConfig(s: String) = cmd.git("git config --get-all svn-remote.%s.%s".format("svn", s)).lines
+    def getConfig(s: String) = {
+      val key = "svn-remote.%s.%s".format("svn", s)
+      try {
+        cmd.git("git", "config", "--get-all", key).lines
+      } catch {
+        case ex: Exception =>
+          println("Could not retrieve the config for the key: " + key)
+          sys.exit(1)
+      }
+    }
     val url = getConfig("url").headOption.getOrElse("")
     def splitRefSpec(s: Stream[String]) = s.map(_.split("\\:")(0).replaceAll("\\*$", "")).toArray
     def getRefSpec(s: String) = splitRefSpec(getConfig(s)).map(safeURLAppend(url, _))
