@@ -16,13 +16,16 @@
 
 package com.atlassian.svn2git
 
-import java.io.InputStream
+import java.io.{ File, InputStream }
 import sys.process._
 import javax.xml.stream.XMLStreamException
 
 object Authors extends Command {
+
+  private val logger = (msg: String) => Console.err.println(msg)
+
   val name = "authors"
-  override val usage = Some("<hostname> [<username> [<password>]]")
+  override val usage = Some("<URL> [<username> [<password>]]")
   val help = """Generates an initial authors mapping for the committers to a Subversion
 repository.
 
@@ -41,6 +44,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   }
 
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {
+    logger("About to create the authors file.")
     val authors = onDemandBaseUrl(arguments.head) match {
       case Some(host) => processOnDemand(host, arguments)
       case None => process(arguments)
@@ -60,17 +64,34 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   def mapUserDetails(usernames: Seq[String])(detailsForUser: String => Option[(String, String)]) =
     (usernames, usernames.par.map(detailsForUser).seq).zipped.map(formatUser).sortWith(user_<)
 
-  private def svnCommandLine(url: String, credentials: Option[(String, String)]): ProcessBuilder =
-    List("svn", "log", "--trust-server-cert", "--non-interactive", "--no-auth-cache", "--xml", "-q")
-      .++(credentials match {
-        case Some((user, pass)) => List("--username", user, "--password", pass, url)
-        case None => List(url)
-      })
+  private def svnCommandLine(url: String, credentials: Option[(String, String)]): ProcessBuilder = svnCommandLineOptions(url, credentials) match {
+    case Nil => {
+      Console.err.println("Invalid svn command!")
+      sys.exit(1)
+    }
+    case opts => opts
+  }
+
+  private[svn2git] def svnCommandLineOptions(url: String, credentials: Option[(String, String)]): List[String] = {
+    val commonOptions = List("--xml", "--non-interactive", "-q")
+    val Remote = """^(https?://.*)""".r
+    val Local = """^(file://.*)""".r
+    url match {
+      case Remote(_) => List("svn", "log", "--trust-server-cert", "--no-auth-cache") ++ commonOptions
+        .++(credentials match {
+          case Some((user, pass)) => List("--username", user, "--password", pass, url)
+          case None => List(url)
+        })
+      case Local(_) => ("svn" :: "log" :: commonOptions) :+ url
+      case path if new File(path).isDirectory => ("svn" :: "log" :: commonOptions) :+ ("file://" + new File(path).getCanonicalPath)
+      case _ => List()
+    }
+  }
 
   private def process(args: Array[String]) =
     generateList(args match {
-      case Array(host, username, password) => svnCommandLine(host, Some((username, password)))
-      case Array(host) => svnCommandLine(host, None)
+      case Array(url, username, password) => svnCommandLine(url, Some((username, password)))
+      case Array(url) => svnCommandLine(url, None)
     })(processUsername)
 
   def processUsername(username: String) =
@@ -83,6 +104,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
     }
 
   private def processOnDemand(host: String, args: Array[String]) = {
+    logger("Retrieving author information from OnDemand instance")
     import dispatch._
     import dispatch.liftjson.Js._
     val Array(url, username, password) = args
