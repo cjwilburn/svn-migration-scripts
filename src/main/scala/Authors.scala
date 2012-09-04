@@ -99,8 +99,10 @@ jane.doe = Jane Doe <jane.d@example.org>"""
       // If the username from Subversion is already an email, remove the domain and capitalise each word to
       // generate the full name (ex: john.doe@developer.com -> 'John Doe') and use the username as the generated email
       Some((username.takeWhile(_ != '@').replace('.', ' ').split("\\s").map(capitalise).mkString(" "), username))
-    } else {
+    } else if (!username.isEmpty) {
       Some((username, username + "@mycompany.com"))
+    } else {
+      None
     }
 
   private def processOnDemand(host: String, args: Array[String]) = {

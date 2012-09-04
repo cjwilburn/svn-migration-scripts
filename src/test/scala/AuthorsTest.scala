@@ -36,9 +36,16 @@ class AuthorsTest extends mutable.Specification {
     } must equalTo(List("c", "a = A <a@example.com>", "b = B <b@example.com>"))
   }
 
-  "test email username" >> {
+  "test username" >> {
     Authors.processUsername("zaphod") must equalTo(Some("zaphod", "zaphod@mycompany.com"))
+  }
+
+  "test email username" >> {
     Authors.processUsername("arthur.dent@example.com") must equalTo(Some("Arthur Dent", "arthur.dent@example.com"))
+  }
+
+  "test empty username" >> {
+    Authors.processUsername("") must beNone
   }
 
   "test svn command line for http://" >> {
