@@ -36,9 +36,37 @@ class AuthorsTest extends mutable.Specification {
     } must equalTo(List("c", "a = A <a@example.com>", "b = B <b@example.com>"))
   }
 
-  "test email username" >> {
+  "test username" >> {
     Authors.processUsername("zaphod") must equalTo(Some("zaphod", "zaphod@mycompany.com"))
+  }
+
+  "test email username" >> {
     Authors.processUsername("arthur.dent@example.com") must equalTo(Some("Arthur Dent", "arthur.dent@example.com"))
+  }
+
+  "test empty username" >> {
+    Authors.processUsername("") must beNone
+  }
+
+  "test svn command line for http://" >> {
+    val url = "http://pug.jira.com/svn"
+    Authors.svnCommandLineOptions(url, None) must be equalTo List("svn", "log", "--trust-server-cert", "--no-auth-cache", "--xml", "--non-interactive", "-q", url)
+  }
+
+  "test svn command line for https://" >> {
+    val url = "https://pug.jira.com/svn"
+    Authors.svnCommandLineOptions(url, None) must be equalTo List("svn", "log", "--trust-server-cert", "--no-auth-cache", "--xml", "--non-interactive", "-q", url)
+  }
+
+  "test svn command line for file://" >> {
+    val url = "file:///Users/stefan/dev/svn2git/repos/a"
+    Authors.svnCommandLineOptions(url, None) must be equalTo List("svn", "log", "--xml", "--non-interactive", "-q", url)
+  }
+
+  "test svn command line for a local directory" >> {
+    val url = "."
+    new java.io.File(url).isDirectory must beTrue
+    Authors.svnCommandLineOptions(url, None) must be equalTo List("svn", "log", "--xml", "--non-interactive", "-q", "file://" + new java.io.File(url).getCanonicalPath)
   }
 
   import net.liftweb.json
