@@ -40,12 +40,12 @@ object Tags {
           val tag = tag_ref stripPrefix "refs/remotes/tags/"
           val tree = $("git", "rev-parse", tag_ref)
 
-          // Find the oldest ancestor for which the tree is the same.
-          val parent_ref = findOldestAncestor(git, tree, tag_ref)
-
-          // If this ancestor is in trunk then we can just tag it, otherwise the tag has diverged from trunk
-          // and it's actually more like a branch than a tag.
           val target_ref = try {
+            // Find the oldest ancestor for which the tree is the same.
+            val parent_ref = findOldestAncestor(git, tree, tag_ref)
+
+            // If this ancestor is in trunk then we can just tag it, otherwise the tag has diverged from trunk
+            // and it's actually more like a branch than a tag.
             val parent = $("git", "rev-parse", parent_ref)
             if ($("git", "merge-base", "refs/remotes/trunk", parent) == parent) {
               parent
