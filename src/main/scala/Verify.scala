@@ -106,11 +106,11 @@ object Verify extends Command {
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {
     def verify(dir: File, deps: Dependency*) = {
       deps.map(command => findVersion(dir, command.invocation: _*).right.flatMap(requireVersion(_, command.required)).fold(
-        (error) => {
+        error => {
           println("%s: ERROR: %s".format(command.name, error))
           true
         },
-        (version) => {
+        version => {
           println("%s: using version %s".format(command.name, version))
           false
         }
