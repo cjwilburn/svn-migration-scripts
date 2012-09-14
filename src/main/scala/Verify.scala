@@ -104,20 +104,27 @@ object Verify extends Command {
   }
 
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {
-    var anyError = false
-    withTempGitDir { dir =>
-      Array(
-        Dependency("Git", "1.7.7.5", "git"),
-        Dependency("Subversion", "1.6.17", "svn"),
-        Dependency("git-svn", "1.7.7.5", "git", "svn")
-      ).map(command => findVersion(dir, command.invocation: _*).right.flatMap(requireVersion(_, command.required)).fold(
-          (error) => { anyError = true; println("%s: ERROR: %s".format(command.name, error)) },
-          (version) => println("%s: using version %s".format(command.name, version))
-        ))
+    def verify(dir: File, deps: Dependency*) = {
+      deps.map(command => findVersion(dir, command.invocation: _*).right.flatMap(requireVersion(_, command.required)).fold(
+        (error) => {
+          println("%s: ERROR: %s".format(command.name, error))
+          true
+        },
+        (version) => {
+          println("%s: using version %s".format(command.name, version))
+          false
+        }
+      )).contains(true)
     }
 
-    anyError = anyError || checkCaseSensitivity
-    anyError = anyError || checkHttpConnectivity
-    anyError
+    val gitErrors = verify(new File("."), Dependency("Git", "1.7.7.5", "git"))
+    val svnErrors = verify(new File("."), Dependency("Subversion", "1.6.17", "svn"))
+    val gitSvnErrors = !gitErrors &&
+      withTempGitDir {
+        dir =>
+          verify(dir, Dependency("git-svn", "1.7.7.5", "git", "svn"))
+      }
+
+    gitErrors || svnErrors || gitSvnErrors || checkCaseSensitivity || checkHttpConnectivity
   }
 }
