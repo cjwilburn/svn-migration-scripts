@@ -129,3 +129,7 @@ class Cmd(cwd: File = new File(".")) {
   val svn: Svn = new Svn
   def println(s: Any) = Console.println(s)
 }
+
+object Version {
+  val version = Version.getClass.getPackage.getImplementationVersion
+}
