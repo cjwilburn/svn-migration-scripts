@@ -88,7 +88,7 @@ class Git(cwd: File, logger: Logger = new NoopLogger) {
 
   def forEachRef(pattern: String) = forEachRefFull(pattern).map(_ stripPrefix pattern)
 
-  def gc() = this("git", "gc", "--prune=now").run().exitValue()
+  def gc() = this("git", "gc", "--prune=now").lines_!
 
   def getRootGitDir() = {
     try {

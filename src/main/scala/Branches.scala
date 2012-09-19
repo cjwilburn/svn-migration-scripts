@@ -37,7 +37,7 @@ object Branches {
           if (branch != "trunk" && !git.isIntermediateRef(branch)) {
             println("Creating the local branch '%s' for Subversion branch '%s'.".format(branch, branch_ref))
             if (options.shouldCreate) {
-              git.$("git", "branch", "-f", "-t", branch, branch_ref)
+              git("git", "branch", "-f", "-t", branch, branch_ref) !
             }
           }
       }
@@ -59,7 +59,7 @@ object Branches {
       excessBranches.values.foreach { branch =>
         println("Deleting Git branch '%s' not in Subversion.".format(branch))
         if (options.shouldDelete) {
-          git.$("git", "branch", "-D", branch)
+          git("git", "branch", "-D", branch) !
         }
       }
     } else {
@@ -83,7 +83,7 @@ object Branches {
       .foreach { r =>
         println("Replacing branch '%s' with '%s'.".format(r, git.cleanRef(r)))
         if (options.shouldDelete) {
-          git.$("git", "branch", "-m", r, git.cleanRef(r))
+          git("git", "branch", "-m", r, git.cleanRef(r)) !
         }
       }
   }

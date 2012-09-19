@@ -93,7 +93,7 @@ object Tags {
       excessTags.values.foreach { tag =>
         println("Deleting Git tag '%s' not in Subversion.".format(tag))
         if (options.shouldDelete) {
-          git.$("git", "tag", "-d", tag)
+          git("git", "tag", "-d", tag) !
         }
       }
     } else {
@@ -125,7 +125,7 @@ object Tags {
               "GIT_COMMITTER_EMAIL" -> $("git", "show", "-s", "--pretty=format:%ae", c),
               "GIT_COMMITTER_DATE" -> $("git", "show", "-s", "--pretty=format:%ad", c)) !
         }
-        if (options.shouldDelete) git.$("git", "tag", "-d", t)
+        if (options.shouldDelete) git("git", "tag", "-d", t) !
       }
   }
 

@@ -76,7 +76,7 @@ object BitbucketPush extends Command {
       remoteName, "Error creating Git remote: " + remoteUrl)
 
   def push(git: Git, remote: String): Either[String, String] =
-    Either.cond((git("git", "push", "--progress", "--all", remote) #&& git("git", "push", "--progress", "--tags", remote)).run().exitValue() == 0,
+    Either.cond((git("git", "push", "--progress", "--all", remote) #&& git("git", "push", "--progress", "--tags", remote)).! == 0,
       "Successfully pushed to Bitbucket", "Pushing repository to Bitbucket failed.")
 
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]): Boolean = {
