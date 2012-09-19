@@ -85,7 +85,7 @@ class Git(cwd: File) {
 
   def forEachRef(pattern: String) = forEachRefFull(pattern).map(_ stripPrefix pattern)
 
-  def gc() = this("git", "gc", "--prune=now").lines_!
+  def gc() = this("git", "gc", "--prune=now").run().exitValue()
 
   def getRootGitDir() = {
     try {

@@ -32,7 +32,7 @@ object SyncRebase extends Command {
       val lstable = $("git", "rev-parse", "--sq", "heads/" + branch)
       val rstable = $("git", "rev-parse", "--sq", remote)
       if (lstable != rstable)
-        if (git("git", "rebase", remote, branch).! != 0)
+        if (git("git", "rebase", remote, branch).run().exitValue() != 0)
           throw sys.error("error rebasing %s onto %s".format(branch, remote))
     }
     false
