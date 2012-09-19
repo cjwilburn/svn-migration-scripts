@@ -46,20 +46,23 @@ object `package` {
   }
 }
 
-class Svn {
+class Svn(logger: Logger = new NoopLogger) {
 
   def findItems(svnUrls: Array[String]): Array[String] = {
     val strippedUrls = svnUrls.map(_ stripSuffix "/")
     val allBranchUrls = strippedUrls.flatMap {
       url =>
-        Seq("svn", "ls", url).lines_!.map(url + "/" + _.stripSuffix("/"))
+        val cmd = Seq("svn", "ls", url)
+        logger.logWith(cmd.mkString(" "))(cmd.lines_!.map(logger.logReturn).map(url + "/" + _.stripSuffix("/")))
     }
     (allBranchUrls diff strippedUrls).map(new File(_).getName)
   }
 
 }
 
-class Git(cwd: File) {
+class Git(cwd: File, logger: Logger = new NoopLogger) {
+  import logger._
+
   def isIntermediateRef(ref: String) = {
     "^.+@\\d+$".r.findAllIn(ref).hasNext
   }
@@ -81,11 +84,11 @@ class Git(cwd: File) {
 
   def dir: File = new File(sys.env.getOrElse("GIT_DIR", ".git"))
 
-  def forEachRefFull(pattern: String) = this("git", "for-each-ref", pattern, "--format=%(refname)").lines
+  def forEachRefFull(pattern: String) = lines("git", "for-each-ref", pattern, "--format=%(refname)")
 
   def forEachRef(pattern: String) = forEachRefFull(pattern).map(_ stripPrefix pattern)
 
-  def gc() = this("git", "gc", "--prune=now").lines_!
+  def gc() = this("git", "gc", "--prune=now").run().exitValue()
 
   def getRootGitDir() = {
     try {
@@ -104,6 +107,7 @@ class Git(cwd: File) {
 
   def warnIfLargeRepository(f: Unit => Unit = _ => ()) = {
     val size = FileUtils.sizeOfDirectory(dir)
+    log("Repository size: " + size)
     if (size > (1 << 30)) {
       println()
       println("### Warning: your repository is larger than 1GB (" + size / (1 << 20) + " Mb)")
@@ -114,18 +118,48 @@ class Git(cwd: File) {
     } else true
   }
 
-  def $(s: String*): String = this(s: _*).!!.stripLineEnd
+  def lines(s: String*): Stream[String] = this(s: _*).lines.map(logReturn)
 
-  def apply(cmd: String) = Process(cmd, cwd)
+  def $(s: String*): String = logReturn(this(s: _*).!!.stripLineEnd)
 
-  def apply(cmd: String*) = Process(cmd, cwd)
+  def apply(cmd: String*) = logWith(cmd.mkString(" "))(Process(cmd, cwd))
 
-  def apply(cmd: Seq[String], extraEnv: (String, String)*) = Process(cmd, cwd, extraEnv: _*)
+  def apply(cmd: Seq[String], extraEnv: (String, String)*) = logWith(cmd.mkString(" "))(Process(cmd, cwd, extraEnv: _*))
 
 }
 
-class Cmd(cwd: File = new File(".")) {
-  val git: Git = new Git(cwd)
-  val svn: Svn = new Svn
-  def println(s: Any) = Console.println(s)
+class Cmd(cwd: File = new File("."), logger: Logger = new NoopLogger) {
+  val git = new Git(cwd, logger)
+  val svn: Svn = new Svn(logger)
+  def println(s: Any) = {
+    logger.log(s.toString)
+    Console.println(s)
+  }
+}
+
+trait Logger {
+  def log(s: String)
+
+  def logReturn[A](s: String): String = logWith(s)(s)
+
+  def logWith[A](s: String)(f: => A): A = {
+    log(s)
+    f
+  }
+}
+
+class NoopLogger extends Logger {
+
+  def log(s: String) {}
+}
+
+class PrintLogger(val out: PrintWriter) extends Logger {
+
+  def log(s: String) {
+    out.println(s)
+  }
+}
+
+object Version {
+  val version = Version.getClass.getPackage.getImplementationVersion
 }

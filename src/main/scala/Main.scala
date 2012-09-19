@@ -17,6 +17,7 @@
 package com.atlassian.svn2git
 
 import scala.Array
+import java.io.{BufferedWriter, PrintWriter, File, FileWriter}
 
 object Main extends App {
   val commands = Array(Authors, Clean, Verify, BitbucketPush, SyncRebase, CreateDiskImage).filter(_.available)
@@ -48,7 +49,25 @@ object Main extends App {
         println(error)
         command.usage.map(u => println(command.name + " usage: [--help] " + u))
       },
-      (parsed) => if (command(new Cmd(), parsed._1, parsed._2)) sys.exit(1)
+      (parsed) => {
+        val logfile = new File(System.getProperty("java.io.tmpdir"), "svn-git-migration.log")
+        val writer = new PrintWriter(new BufferedWriter(new FileWriter(logfile, true)))
+        try {
+          writer.append("%nTime: %s, Command: %s, Version: %s%n" format (new java.util.Date(), args.mkString(" "), Version.version))
+          if (command(new Cmd(logger = new PrintLogger(writer)), parsed._1, parsed._2)) {
+            writer.close()
+            sys.exit(1)
+          }
+        } catch {
+          case e: Exception => {
+            e.printStackTrace(writer)
+            println("An unexpected error occured, please attach %s to any related support issue" format (logfile))
+            throw e
+          }
+        } finally {
+          writer.close()
+        }
+      }
     )
   }
 }
