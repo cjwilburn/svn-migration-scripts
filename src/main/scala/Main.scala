@@ -17,7 +17,7 @@
 package com.atlassian.svn2git
 
 import scala.Array
-import java.io.{BufferedWriter, PrintWriter, File, FileWriter}
+import java.io.{ BufferedWriter, PrintWriter, File, FileWriter }
 
 object Main extends App {
   val commands = Array(Authors, Clean, Verify, BitbucketPush, SyncRebase, CreateDiskImage).filter(_.available)
