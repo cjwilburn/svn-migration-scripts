@@ -46,7 +46,7 @@ object `package` {
   }
 }
 
-class Svn(logger: Logger = new NullLogger) {
+class Svn(logger: Logger = new NoopLogger) {
 
   def findItems(svnUrls: Array[String]): Array[String] = {
     val strippedUrls = svnUrls.map(_ stripSuffix "/")
@@ -60,7 +60,7 @@ class Svn(logger: Logger = new NullLogger) {
 
 }
 
-class Git(cwd: File, logger: Logger = new NullLogger) {
+class Git(cwd: File, logger: Logger = new NoopLogger) {
   import logger._
 
   def isIntermediateRef(ref: String) = {
@@ -128,7 +128,7 @@ class Git(cwd: File, logger: Logger = new NullLogger) {
 
 }
 
-class Cmd(cwd: File = new File("."), logger: Logger = new NullLogger) {
+class Cmd(cwd: File = new File("."), logger: Logger = new NoopLogger) {
   val git = new Git(cwd, logger)
   val svn: Svn = new Svn(logger)
   def println(s: Any) = {
@@ -148,7 +148,7 @@ trait Logger {
   }
 }
 
-class NullLogger extends Logger {
+class NoopLogger extends Logger {
 
   def log(s: String) {}
 }
