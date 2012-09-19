@@ -109,11 +109,11 @@ object Verify extends Command {
     def verify(dir: File, deps: Dependency*) = {
       deps.map(command => findVersion(dir, command.invocation: _*).right.flatMap(requireVersion(_, command.required)).fold(
         error => {
-          println("%s: ERROR: %s".format(command.name, error))
+          cmd.println("%s: ERROR: %s".format(command.name, error))
           true
         },
         version => {
-          println(versionString.format(command.name, version))
+          cmd.println(versionString.format(command.name, version))
           false
         }
       )).contains(true)

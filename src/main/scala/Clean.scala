@@ -78,7 +78,7 @@ object Clean extends Command {
     def getConfig(s: String) = {
       val key = "svn-remote.%s.%s".format("svn", s)
       try {
-        cmd.git("git", "config", "--get-all", key).lines
+        cmd.git.lines("git", "config", "--get-all", key)
       } catch {
         case ex: Exception =>
           println("Could not retrieve the config for the key: " + key)
@@ -105,7 +105,7 @@ object Clean extends Command {
       } else {
         println("# removing Subversion metadata from Git commit messages")
         if (options.shouldDelete) {
-          git("git", "filter-branch", "--msg-filter", "sed -e '/^git-svn-id:/d'").!
+          git.$("git", "filter-branch", "--msg-filter", "sed -e '/^git-svn-id:/d'")
         }
         false
       }

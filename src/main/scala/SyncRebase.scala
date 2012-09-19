@@ -27,7 +27,7 @@ object SyncRebase extends Command {
     import cmd._
     import git.$
 
-    git("git branch").lines_!.map(_.substring(2)).foreach { branch =>
+    git.lines("git", "branch").map(_.substring(2)).foreach { branch =>
       val remote = "remotes/" + (if (branch == "master") "trunk" else branch)
       val lstable = $("git", "rev-parse", "--sq", "heads/" + branch)
       val rstable = $("git", "rev-parse", "--sq", remote)
