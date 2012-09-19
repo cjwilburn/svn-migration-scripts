@@ -59,7 +59,7 @@ object Main extends App {
             sys.exit(1)
           }
         } catch {
-          case e => {
+          case e: Exception => {
             e.printStackTrace(writer)
             println("An unexpected error occured, please attach %s to any related support issue" format (logfile))
             throw e
