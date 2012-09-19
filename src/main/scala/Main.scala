@@ -17,7 +17,7 @@
 package com.atlassian.svn2git
 
 import scala.Array
-import java.io.{ PrintWriter, File, FileWriter }
+import java.io.{BufferedWriter, PrintWriter, File, FileWriter}
 
 object Main extends App {
   val commands = Array(Authors, Clean, Verify, BitbucketPush, SyncRebase, CreateDiskImage).filter(_.available)
@@ -50,8 +50,8 @@ object Main extends App {
         command.usage.map(u => println(command.name + " usage: [--help] " + u))
       },
       (parsed) => {
-        val logfile = new File(System.getProperty("java.io.tmpdir") + "/svn-git-migration.log")
-        val writer = new PrintWriter(new FileWriter(logfile, true), true)
+        val logfile = new File(System.getProperty("java.io.tmpdir"), "svn-git-migration.log")
+        val writer = new PrintWriter(new BufferedWriter(new FileWriter(logfile, true)))
         try {
           writer.append("%nTime: %s, Command: %s, Version: %s%n" format (new java.util.Date(), args.mkString(" "), Version.version))
           if (command(new Cmd(logger = new PrintLogger(writer)), parsed._1, parsed._2)) {
