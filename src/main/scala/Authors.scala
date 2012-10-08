@@ -75,7 +75,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
   private[svn2git] def svnCommandLineOptions(url: String, credentials: Option[(String, String)]): List[String] = {
     val commonOptions = List("--xml", "--non-interactive", "-q")
     val Remote = """^(https?://.*)""".r
-    val Local = """^(file://.*)""".r
+    val Local = """^((?:svn|file)://.*)""".r
     url match {
       case Remote(_) => List("svn", "log", "--trust-server-cert", "--no-auth-cache") ++ commonOptions
         .++(credentials match {

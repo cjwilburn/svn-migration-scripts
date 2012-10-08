@@ -48,18 +48,23 @@ class AuthorsTest extends mutable.Specification {
     Authors.processUsername("") must beNone
   }
 
-  "test svn command line for http://" >> {
+  "test svn command line for http:// schema" >> {
     val url = "http://pug.jira.com/svn"
     Authors.svnCommandLineOptions(url, None) must be equalTo List("svn", "log", "--trust-server-cert", "--no-auth-cache", "--xml", "--non-interactive", "-q", url)
   }
 
-  "test svn command line for https://" >> {
+  "test svn command line for https:// schema" >> {
     val url = "https://pug.jira.com/svn"
     Authors.svnCommandLineOptions(url, None) must be equalTo List("svn", "log", "--trust-server-cert", "--no-auth-cache", "--xml", "--non-interactive", "-q", url)
   }
 
-  "test svn command line for file://" >> {
+  "test svn command line for file:// schema" >> {
     val url = "file:///Users/stefan/dev/svn2git/repos/a"
+    Authors.svnCommandLineOptions(url, None) must be equalTo List("svn", "log", "--xml", "--non-interactive", "-q", url)
+  }
+
+  "test svn command line for svn:// schema" >> {
+    val url = "svn://localhost"
     Authors.svnCommandLineOptions(url, None) must be equalTo List("svn", "log", "--xml", "--non-interactive", "-q", url)
   }
 
