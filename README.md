@@ -1,28 +1,55 @@
 # SVN Migration Scripts
 
-## Building the JAR
+You run the scripts using an executable JAR file.  You can download the JAR from this repository. Alternatively, instructions for building the JAR yourself appear at the bottom of this page. We recommend you simply download the already built JAR.
 
-To build the JAR, you need a JDK and [SBT][]. You can [download a JDK][] from Oracle; go for Java 6 or newer. See [this page][install SBT] for installation instructions for SBT.
+## Prerequisites 
 
-Once you've installed Java & SBT, you can create the JAR by running (from the root of the project):
-
-    $ sbt proguard
-
-This will create the JAR file under the `target/scala-2.9.1` directory. The generated JAR is called `svn-migration-scripts_2.9.1-0.1.min.jar`; in the examples below we assume that it has been copied to the path `svn-migration-scripts.jar` in the current directory.
-
-## Running the scripts
-
-Having built the JAR, you can run the scripts it contains. All commands have the format:
-
-    $ java -jar svn-migration-scripts.jar <command> <args>…
-
-A list of available commands can be obtained by omitting the command and arguments (e.g., `java -jar svn-migration-scripts.jar`). All commands optionally take a `--help` argument, displaying usage information about the command.
-
-You need the following dependencies:
+To use these scripts, make sure you have the following software already installed on your local system:
 
 * A Java runtime, version 6 or newer ([download from Oracle][download a JDK]),
 * [Git][], with `git-svn` included, version 1.7.7.5 or newer, and
 * [Subversion][], version 1.6.17 or newer.
+
+## Getting the Executable JAR
+
+Download the `svn-migration-scripts.jar` from this repository by doing the following:
+
+1. Click the _Downloads_ link in the repository navigation bar.
+2. Select the `svn-migration-scripts.jar` from the list of files.
+
+
+## Running the scripts from the JAR
+
+Having downloaded the JAR, you can run the scripts it contains. All commands have the format:
+
+    $ java -jar svn-migration-scripts.jar <command> <args>…
+    
+Leave off the `<command> <args>` to list the available commands:
+    
+    $ java -jar svn-migration-scripts.jar
+	Available commands:
+	- authors
+	- bitbucket-push
+	- clean-git
+	- create-disk-image
+	- sync-rebase
+	- verify
+    
+
+All commands optionally take a `--help` argument, displaying usage information about the command.
+
+	$ java -jar svn-migration-scripts.jar authors --help authors
+	<URL> [<username> [<password>]]
+
+	Generates an initial authors mapping for the committers to a Subversion
+	repository.
+
+	Each line of the author mapping associates a Subversion commiter with their
+	full name and e-mail address. For example:
+
+	jane.doe = Jane Doe <jane.d@example.org>
+
+	
 
 #### A note on Subversion permissions
 
@@ -186,10 +213,25 @@ In this example, we push our converted repository to Bitbucket. We use the crede
      … many more tags created …
     Successfully pushed to Bitbucket
     $
+    
+## Building the JAR Yourself
 
-[SBT]: https://github.com/harrah/xsbt/wiki/
+If you want, you can clone the repository and build the JAR your self. To build the JAR, you need the Oracle JDK 1.6 or higher and [SBT][]. You can [download a JDK][] from Oracle. See [this page][install SBT] for installation instructions for SBT.
+
+Once you've installed Java & SBT, you can create the JAR by doing the following:
+
+1. Clone the svn-migration-scripts repository.
+2. Change to the root of the project.
+3. Run the following command to create the JAR file under the `target/scala-2.9.1` directory.
+
+    $ sbt proguard
+
+4. Rename the generated JAR to `svn-migration-scripts.jar`.
+    
+
+[SBT]: http://www.scala-sbt.org/
 [download a JDK]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
-[install SBT]: https://github.com/harrah/xsbt/wiki/Getting-Started-Setup
+[install SBT]: http://www.scala-sbt.org/release/docs/Getting-Started/Setup
 [Git]: http://git-scm.com/
 [Subversion]: http://subversion.apache.org/
 [SVN permissions]: https://confluence.atlassian.com/display/AOD/Configuring+repository+permissions+for+a+project#Configuringrepositorypermissionsforaproject-Configuringrepositorypermissionsatthepathlevel
