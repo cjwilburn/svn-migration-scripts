@@ -28,12 +28,23 @@ object SyncRebase extends Command {
     import git.$
 
     git.lines("git", "branch").map(_.substring(2)).foreach { branch =>
-      val remote = "remotes/" + (if (branch == "master") "trunk" else branch)
       val lstable = $("git", "rev-parse", "--sq", "heads/" + branch)
-      val rstable = $("git", "rev-parse", "--sq", remote)
-      if (lstable != rstable)
-        if (git("git", "rebase", remote, branch).! != 0)
-          throw sys.error("error rebasing %s onto %s".format(branch, remote))
+      val tracking = try {
+        val remote = if (branch == "master") "remotes/trunk" else $("git", "config", "branch." + branch + ".merge")
+        Some(remote, $("git", "rev-parse", "--sq", remote))
+      } catch {
+        case e => {
+          println("Error finding tracking ref for branch %s" format (branch, e.getMessage))
+          None
+        }
+      }
+      tracking match {
+        case Some((remote, rstable)) if (lstable != rstable) => {
+          if (git("git", "rebase", remote, branch).! != 0)
+            throw sys.error("error rebasing %s onto %s".format(branch, remote))
+        }
+        case _ => ()
+      }
     }
     false
   }
