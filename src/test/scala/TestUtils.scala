@@ -8,6 +8,8 @@ class MockCmd(dir: File, override val svn: Svn = new MockSvn) extends Cmd(dir) {
 
   override def println(a: Any) = list += a.toString
 
+  override def printerr(a: Any) = list += a.toString
+
 }
 
 class MockSvn(fi: Array[String] => Array[String] = identity) extends Svn {
