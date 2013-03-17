@@ -135,6 +135,10 @@ class Cmd(cwd: File = new File("."), logger: Logger = new NoopLogger) {
     logger.log(s.toString)
     Console.println(s)
   }
+  def printerr(s: Any) = {
+    logger.log(s.toString)
+    Console.err.println(s)
+  }
 }
 
 trait Logger {

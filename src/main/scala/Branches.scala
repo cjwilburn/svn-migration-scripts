@@ -37,7 +37,12 @@ object Branches {
           if (branch != "trunk" && !git.isIntermediateRef(branch)) {
             println("Creating the local branch '%s' for Subversion branch '%s'.".format(branch, branch_ref))
             if (options.shouldCreate) {
-              git("git", "branch", "-f", "-t", branch, branch_ref) !
+              if (branch.length > 120) {
+                printerr("WARNING: Branch %s is too long and cannot be tracked" format (branch))
+                git("git", "branch", "-f", branch, branch_ref) !
+              } else {
+                git("git", "branch", "-f", "-t", branch, branch_ref) !
+              }
             }
           }
       }
