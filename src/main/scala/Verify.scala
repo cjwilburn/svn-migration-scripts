@@ -51,7 +51,7 @@ object Verify extends Command {
   def findVersion(cwd: File, s: String*): Either[String, String] =
     (try {
       Process(s :+ "--version", cwd).lines.headOption
-    } catch { case e: IOException => None })
+    } catch { case e: Exception => None })
       .flatMap("(?<=version )[^ ]+".r findFirstIn _).toRight("Unable to determine version.")
 
   def requireVersion(actual: String, required: String): Either[String, String] =
