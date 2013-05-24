@@ -37,13 +37,17 @@ object Clean extends Command {
     // read options
     val force = options.contains("--force")
     implicit val opts = Options(force, force && !options.contains("--no-delete"), options.contains("--strip-metadata"))
-    if (!force) {
-      println(
-        """###########################################################
-          |#                  This is a dry run                      #
-          |#         No changes will be made to your repository      #
-          |###########################################################""".stripMargin)
+    def printDryRunWarning() {
+      if (!force) {
+        println(
+          """###########################################################
+            |#         This is a dry run, add --force to commit        #
+            |#        No changes will be made to your repository       #
+            |###########################################################""".stripMargin)
+      }
     }
+
+    printDryRunWarning()
 
     // create annotated tags for Subversion remote tags
     Tags.annotate(cmd)
@@ -68,6 +72,8 @@ object Clean extends Command {
 
     // strip the git-svn metadata at the end of every commit (if --strip-metadata)
     stripMetadata(cmd)
+
+    printDryRunWarning()
 
     // gc the repository and verify its size (if it's too big, warn the user)
     git.gc()
