@@ -40,7 +40,7 @@ jane.doe = Jane Doe <jane.d@example.org>"""
       Left(if (minimumArguments == 3) "Missing arguments (username and password are required for OnDemand)"
       else "Invalid or missing arguments: re-run with --help for more info")
     else
-      Right(Array(), if (arguments.length == 2) arguments :+ readLine("password? ") else arguments)
+      Right(Array(), if (arguments.length == 2) arguments :+ readPassword() else arguments)
   }
 
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]) = {

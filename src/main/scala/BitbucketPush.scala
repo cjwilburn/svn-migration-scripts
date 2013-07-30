@@ -24,13 +24,13 @@ import sys.process.ProcessLogger
 object BitbucketPush extends Command {
   val name = "bitbucket-push"
   val help = "Push to a repository on Bitbucket, optionally creating it."
-  override val usage = Some("<username> <password> [<owner>] <repository-name>")
+  override val usage = Some("<username> [<owner>] <repository-name>")
 
   def parse(args: Array[String]) = {
     val (options, arguments) = args.partition(_ == "--ssh")
     arguments match {
-      case Array(user, pass, owner, name) => Right(options, arguments)
-      case Array(user, pass, name) => Right(options, Array(user, pass, user, name))
+      case Array(user, owner, name) => Right(options, arguments)
+      case Array(user, name) => Right(options, Array(user, user, name))
       case _ => Left("Invalid or missing arguments: re-run with --help for more info")
     }
   }
@@ -82,8 +82,9 @@ object BitbucketPush extends Command {
   def apply(cmd: Cmd, options: Array[String], arguments: Array[String]): Boolean = {
     import Request.{ encode_% => e }
     import cmd.git
-    val Array(username, password, owner, name) = arguments
+    val Array(username, owner, name) = arguments
 
+    val password = readPassword()
     // gc the repository and ask for an explicit confirmation if it is very large
     git.gc()
     git.warnIfLargeRepository({
