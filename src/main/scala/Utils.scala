@@ -44,6 +44,8 @@ object `package` {
       IOUtils.closeQuietly(s)
     }
   }
+
+  def readPassword() = new String(System.console().readPassword("Password: "))
 }
 
 class Svn(logger: Logger = new NoopLogger) {
