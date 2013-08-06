@@ -104,7 +104,7 @@ object BitbucketPush extends Command {
         if (options.contains("--ssh"))
           ensureRemote(git, "bitbucket-ssh", "git@bitbucket.org:%s/%s".format(owner, slug))
         else
-          ensureRemote(git, "bitbucket", "https://%s:%s@bitbucket.org/%s/%s".format(e(username), e(password), owner, slug))
+          ensureRemote(git, "bitbucket", "https://%s@bitbucket.org/%s/%s".format(e(username), owner, slug))
       }.right
       result <- push(git, remote).right
     } yield result).fold(
