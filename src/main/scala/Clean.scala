@@ -111,7 +111,7 @@ object Clean extends Command {
       } else {
         println("# removing Subversion metadata from Git commit messages")
         if (options.shouldDelete) {
-          git("git", "filter-branch", "--msg-filter", "sed -e '/^git-svn-id:/d'").!
+          git("git", "filter-branch", "--msg-filter", "sed -e '/^git-svn-id:/d'", "--tag-name-filter", "cat", "--", "--all").!
         }
         false
       }
