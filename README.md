@@ -179,7 +179,8 @@ Once the initial file has been generated *it is important to edit it so that it 
 
 In this example, we generate an authors file for the Subversion repository at `https://studio.atlassian.com/svn`. To authenticate against the repository, we supply a username and password on the command line (“test-user” and “test-user-password” respectively).
 
-    $ java -jar svn-migration-scripts.jar authors https://studio.atlassian.com/svn test-user test-user-password
+    $ java -jar svn-migration-scripts.jar authors https://studio.atlassian.com/svn test-user
+    > Password: ****
     abhalla = abhalla <abhalla@mycompany.com>
     ahempel = ahempel <ahempel@mycompany.com>
     andreask = andreask <andreask@mycompany.com>
@@ -194,7 +195,8 @@ If you run the authors command against an Atlassian OnDemand instance, the comma
 
 This command pushes the Git repository in the directory it is run from to a repository in [Bitbucket][], creating it if it does not exist. It is run as follows:
 
-    $ java -jar svn-migration-scripts.jar bitbucket-push <username> <password> [<owner>] <repository-name>
+    $ java -jar svn-migration-scripts.jar bitbucket-push <username> [<owner>] <repository-name>
+    > Password: ****
 
 This will push the Git repository in the current directory to the Bitbucket repository with the name `repository-name` owned by `owner`; if this repository does not exist, it is created, and if the `owner` option is omitted, it defaults to `username`. `username` and `password` are the credentials used to authenticate against Bitbucket. Typically, you might pass your organisation's Bitbucket team as the owner. If the repository is created by this command, it is created as a private repository.
 
@@ -202,7 +204,8 @@ This will push the Git repository in the current directory to the Bitbucket repo
 
 In this example, we push our converted repository to Bitbucket. We use the credentials of the user “bbusername”, and because we haven't specified a repository owner, it's defaulted to creating the repository as belonging to “bbusername”. The repository has the name specified on the command line, namely “rest-clone”.
 
-    $ java -jar svn-migration-scripts.jar bitbucket-push bbusername bbpassword rest-clone
+    $ java -jar svn-migration-scripts.jar bitbucket-push bbusername rest-clone
+    > Password: ****
     remote: bb/acl: bbusername is allowed. accepted payload.
     To https://bbusername:bbpassword@bitbucket.org/bbusername/rest-clone
      * [new branch]      2.0-proposed -> 2.0-proposed
