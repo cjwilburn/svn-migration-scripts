@@ -45,7 +45,9 @@ object `package` {
     }
   }
 
-  def readPassword() = new String(System.console().readPassword("Password: "))
+  def readPassword() = Option(System.console())
+    .map(console => new String(console.readPassword("Password: ")))
+    .getOrElse(readLine())
 }
 
 class Svn(logger: Logger = new NoopLogger) {
