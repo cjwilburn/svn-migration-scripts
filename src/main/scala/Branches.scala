@@ -41,7 +41,8 @@ object Branches {
               if (branch.length > 120) {
                 printerr("WARNING: Branch %s is too long and cannot be tracked" format (branch))
               } else {
-                // Since Git 1.8.4 you can't track non-remote branches
+                // Since Git 1.8.4 you can't track non-remote refs
+                // https://github.com/git/git/commit/41c21f22d0fc06f1f22489621980396aea9f7a62
                 // Manually add the tracking to be used by SyncRebase
                 // Note that the branch and merge can be different due to us 'cleaning' the names in fixNames()
                 git("git", "config", "branch." + branch + ".merge", branch_ref) !
