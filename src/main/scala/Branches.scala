@@ -37,11 +37,15 @@ object Branches {
           if (branch != "trunk" && !git.isIntermediateRef(branch)) {
             println("Creating the local branch '%s' for Subversion branch '%s'.".format(branch, branch_ref))
             if (options.shouldCreate) {
+              git("git", "branch", "-f", branch, branch_ref).!
               if (branch.length > 120) {
                 printerr("WARNING: Branch %s is too long and cannot be tracked" format (branch))
-                git("git", "branch", "-f", branch, branch_ref) !
               } else {
-                git("git", "branch", "-f", "-t", branch, branch_ref) !
+                // Since Git 1.8.4 you can't track non-remote refs
+                // https://github.com/git/git/commit/41c21f22d0fc06f1f22489621980396aea9f7a62
+                // Manually add the tracking to be used by SyncRebase
+                // Note that the branch and merge can be different due to us 'cleaning' the names in fixNames()
+                git("git", "config", "branch." + branch + ".merge", branch_ref) !
               }
             }
           }
