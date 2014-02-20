@@ -115,7 +115,7 @@ class Git(cwd: File, logger: Logger = new NoopLogger) {
     if (size > (1 << 30)) {
       println()
       println("### Warning: your repository is larger than 1GB (" + size / (1 << 20) + " Mb)")
-      println("### See https://dvcsroute.atlassian.net/wiki/x/XQAQ on how to reduce the size of your repository.")
+      println("### See http://go-dvcs.atlassian.com/x/GQAW on how to reduce the size of your repository.")
       println()
       f()
       false
