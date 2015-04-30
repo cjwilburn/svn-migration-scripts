@@ -227,7 +227,7 @@ This command pushes the Git repository in the directory it is run from to a repo
     $ java -jar svn-migration-scripts.jar github-push <username> [<owner>] <repository-name>
     > Password: ****
 
-This will push the Git repository in the current directory to the Bitbucket repository with the name `repository-name` owned by `owner`; if this repository does not exist, it is created, and if the `owner` option is omitted, it defaults to `username`. `username` and `password` are the credentials used to authenticate against Bitbucket. Typically, you might pass your organisation's Bitbucket team as the owner. If the repository is created by this command, it is created as a private repository.
+This will push the Git repository in the current directory to the Bitbucket repository with the name `repository-name` owned by `owner`; if this repository does not exist, it is created, and if the `owner` option is omitted, it defaults to `username`. `username` and `password` are the credentials used to authenticate against Github. Typically, you might pass your organisation's Github team as the owner. If the repository is created by this command, it is created as a private repository.
 
 ##### Example
 
