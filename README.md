@@ -231,7 +231,7 @@ This will push the Git repository in the current directory to the Bitbucket repo
 
 ##### Example
 
-In this example, we push our converted repository to Github. We use the credentials of the user “ghusername”, and because we haven't specified a repository owner, it's defaulted to creating the repository as belonging to “bbusername”. The repository has the name specified on the command line, namely “rest-clone”.
+In this example, we push our converted repository to Github. We use the credentials of the user “ghusername”, and because we haven't specified a repository owner, it's defaulted to creating the repository as belonging to “ghusername”. The repository has the name specified on the command line, namely “rest-clone”.
 
     $ java -jar svn-migration-scripts.jar bitbucket-push ghusername rest-clone
     > Password: ****
