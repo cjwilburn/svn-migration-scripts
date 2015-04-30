@@ -1,5 +1,7 @@
 # SVN Migration Scripts
 
+This is a modification of the Atlassian Script for Migrating from SVN to Git. The only major addition is the github-push, which pushes to Github instead of Bitbucket.
+
 You run the scripts using an executable JAR file.  You can download the JAR from this repository. Alternatively, instructions for building the JAR yourself appear at the bottom of this page. We recommend you simply download the already built JAR.
 
 ## Prerequisites 
@@ -216,7 +218,36 @@ In this example, we push our converted repository to Bitbucket. We use the crede
      … many more tags created …
     Successfully pushed to Bitbucket
     $
-    
+
+
+### github-push
+
+This command pushes the Git repository in the directory it is run from to a repository in [Github][], creating it if it does not exist. It is run as follows:
+
+    $ java -jar svn-migration-scripts.jar github-push <username> [<owner>] <repository-name>
+    > Password: ****
+
+This will push the Git repository in the current directory to the Bitbucket repository with the name `repository-name` owned by `owner`; if this repository does not exist, it is created, and if the `owner` option is omitted, it defaults to `username`. `username` and `password` are the credentials used to authenticate against Bitbucket. Typically, you might pass your organisation's Bitbucket team as the owner. If the repository is created by this command, it is created as a private repository.
+
+##### Example
+
+In this example, we push our converted repository to Github. We use the credentials of the user “ghusername”, and because we haven't specified a repository owner, it's defaulted to creating the repository as belonging to “bbusername”. The repository has the name specified on the command line, namely “rest-clone”.
+
+    $ java -jar svn-migration-scripts.jar bitbucket-push ghusername rest-clone
+    > Password: ****
+    remote: gh/acl: ghusername is allowed. accepted payload.
+    To https://bbusername:bbpassword@github/bbusername/rest-clone
+     * [new branch]      2.0-proposed -> 2.0-proposed
+     … many more branches created …
+    remote: gh/acl: ghusername is allowed. accepted payload.
+    To https://ghusername:ghpassword@bitbucket.org/hgiddens/rest-clone
+     * [new tag]         1.1.1 -> 1.1.1
+     … many more tags created …
+    Successfully pushed to Github
+    $
+
+
+
 ## Building the JAR Yourself
 
 If you want, you can clone the repository and build the JAR your self. To build the JAR, you need the Oracle JDK 1.6 or higher and [SBT][]. You can [download a JDK][] from Oracle. See [this page][install SBT] for installation instructions for SBT.

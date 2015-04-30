@@ -20,7 +20,7 @@ import scala.Array
 import java.io.{ BufferedWriter, PrintWriter, File, FileWriter }
 
 object Main extends App {
-  val commands = Array(Authors, Clean, Verify, BitbucketPush, SyncRebase, CreateDiskImage).filter(_.available)
+  val commands = Array(Authors, Clean, Verify, BitbucketPush, GithubPush, SyncRebase, CreateDiskImage).filter(_.available)
 
   object Help extends Command {
     val name = "help"
