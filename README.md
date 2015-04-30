@@ -1,6 +1,6 @@
 # SVN Migration Scripts
 
-This is a modification of the Atlassian Script for Migrating from SVN to Git. The only major addition is the github-push, which pushes to Github instead of Bitbucket.
+This is a minor modification of the [Atlassian Script for Migrating from SVN](https://bitbucket.org/atlassian/svn-migration-scripts/src) to Git. The only addition is the github-push, which pushes to Github instead of Bitbucket.
 
 You run the scripts using an executable JAR file.  You can download the JAR from this repository. Alternatively, instructions for building the JAR yourself appear at the bottom of this page. We recommend you simply download the already built JAR.
 
