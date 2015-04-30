@@ -233,14 +233,14 @@ This will push the Git repository in the current directory to the Bitbucket repo
 
 In this example, we push our converted repository to Github. We use the credentials of the user “ghusername”, and because we haven't specified a repository owner, it's defaulted to creating the repository as belonging to “ghusername”. The repository has the name specified on the command line, namely “rest-clone”.
 
-    $ java -jar svn-migration-scripts.jar bitbucket-push ghusername rest-clone
+    $ java -jar svn-migration-scripts.jar github-push ghusername rest-clone
     > Password: ****
     remote: gh/acl: ghusername is allowed. accepted payload.
-    To https://bbusername:bbpassword@github/bbusername/rest-clone
+    To https://ghusername:ghpassword@github/ghusername/rest-clone
      * [new branch]      2.0-proposed -> 2.0-proposed
      … many more branches created …
     remote: gh/acl: ghusername is allowed. accepted payload.
-    To https://ghusername:ghpassword@bitbucket.org/hgiddens/rest-clone
+    To https://ghusername:ghpassword@github.com/hgiddens/rest-clone
      * [new tag]         1.1.1 -> 1.1.1
      … many more tags created …
     Successfully pushed to Github
